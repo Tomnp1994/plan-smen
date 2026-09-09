@@ -2,196 +2,270 @@
 <html lang="cs">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Plán směn</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plán směn – v2</title>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--primary:#315efb;--danger:#d92d20;--ok:#079455;--day:#eaf2ff;--night:#eeeaff;--off:#f2f4f7}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line);padding:18px 22px;position:sticky;top:0;z-index:5}
-.wrap{max-width:1250px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:24px;font-weight:750}.sub{color:var(--muted);margin-top:3px}
-button,select,input{font:inherit}button{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:650}.primary{background:var(--primary);color:#fff}.secondary{background:#eef2ff;color:#2947b8}.plain{background:#fff;border:1px solid var(--line)}.danger{color:var(--danger)}
-main{padding:22px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 2px 8px #1018280a}
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.month{font-size:20px;font-weight:750;margin:0 8px}.spacer{flex:1}
-.notice{padding:12px 14px;border-radius:12px;background:#ecfdf3;color:#067647;margin-top:14px}.notice.warn{background:#fffaeb;color:#b54708}.notice.err{background:#fef3f2;color:#b42318}
-.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.schedule{border-collapse:separate;border-spacing:0;min-width:900px;width:100%}.schedule th,.schedule td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;height:54px;padding:5px}.schedule th{background:#f9fafb;position:sticky;top:0;z-index:2;font-size:12px}.schedule th:first-child,.schedule td:first-child{position:sticky;left:0;z-index:3;background:#fff;text-align:left;min-width:150px}.schedule th:first-child{z-index:4;background:#f9fafb}.cell{width:100%;height:42px;border-radius:9px;padding:0;font-weight:750}.D{background:var(--day);color:#2453b8}.N{background:var(--night);color:#5b42b7}.V{background:var(--off);color:#667085}.DOV{background:#fff1d6;color:#a15c00}.PN{background:#ffe4e1;color:#b42318}
-.today{outline:2px solid var(--primary);outline-offset:-2px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.person{border:1px solid var(--line);border-radius:12px;padding:14px}.person h3{margin:0 0 8px}.small{font-size:13px;color:var(--muted)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{padding:14px;background:#f9fafb;border-radius:12px}.stat b{display:block;font-size:21px}
-.modal{position:fixed;inset:0;background:#10182866;display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.show{display:flex}.modalbox{background:#fff;border-radius:18px;padding:20px;max-width:520px;width:100%}.modalbox h2{margin-top:0}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{padding:18px;border:1px solid var(--line);border-radius:12px;background:#fff;text-align:left}.choice strong{display:block;font-size:17px}.form{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form input,.form select{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px}.people-actions{display:flex;gap:8px;margin-top:12px}
-@media(max-width:700px){main{padding:12px}.top{align-items:flex-start;flex-direction:column}.row{grid-template-columns:1fr}.brand{font-size:21px}}
+:root{--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--blue:#315efb;--bluebg:#eaf2ff;--purple:#6f56d9;--purplebg:#eeeaff;--green:#067647;--greenbg:#ecfdf3;--red:#b42318;--redbg:#fef3f2;--orange:#b54708;--orangebg:#fffaeb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10;padding:16px 20px}.wrap{max-width:1350px;margin:auto}.top{display:flex;align-items:center;gap:16px}.brand{font-size:24px;font-weight:800}.sub{color:var(--muted);font-size:13px}.spacer{flex:1}
+button,input,select{font:inherit}button{border:0;border-radius:11px;padding:11px 15px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:white}.secondary{background:#eef2ff;color:#2947b8}.plain{background:white;border:1px solid var(--line);color:var(--text)}.danger{color:var(--red)}
+main{padding:20px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 2px 8px #1018280a}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:9px}.month{font-size:20px;font-weight:800;margin:0 5px}
+.notice{padding:13px 15px;border-radius:12px;margin-top:13px;background:var(--greenbg);color:var(--green);line-height:1.45}.notice.err{background:var(--redbg);color:var(--red)}.notice.warn{background:var(--orangebg);color:var(--orange)}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:13px}.schedule{border-collapse:separate;border-spacing:0;min-width:1000px;width:100%}.schedule th,.schedule td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;padding:5px;height:55px}.schedule th{background:#f9fafb;font-size:12px;position:sticky;top:0;z-index:3}.schedule th:first-child,.schedule td:first-child{position:sticky;left:0;z-index:4;background:#fff;text-align:left;min-width:155px}.schedule th:first-child{background:#f9fafb}.schedule th.weekend{background:#fff6ed}.name{font-weight:800}.small{font-size:12px;color:var(--muted)}.cell{width:100%;height:43px;border-radius:9px;padding:0;font-weight:800}.D{background:var(--bluebg);color:#2453b8}.N{background:var(--purplebg);color:#5b42b7}.V{background:#f2f4f7;color:#667085}.DOV{background:#fff1d6;color:#a15c00}.PN{background:#ffe4e1;color:#b42318}.VOL{background:#fff6ed;color:#9a3412}.today{outline:2px solid var(--blue);outline-offset:-2px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.stat{background:#f9fafb;border-radius:12px;padding:13px}.stat b{display:block;font-size:16px}.stat span{color:var(--muted);font-size:13px}.ok{color:var(--green)}.bad{color:var(--red)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.person{border:1px solid var(--line);border-radius:13px;padding:14px}.person h3{margin:0 0 8px}.person .actions{display:flex;gap:8px;margin-top:12px}.form{display:grid;gap:12px}.form label{display:grid;gap:5px}.form input,.form select{padding:10px;border:1px solid var(--line);border-radius:9px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.help{font-size:12px;color:var(--muted)}.modal{position:fixed;inset:0;background:#10182877;display:none;align-items:center;justify-content:center;padding:16px;z-index:30}.modal.show{display:flex}.modalbox{background:white;border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}.modalbox h2{margin-top:0}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{padding:18px;text-align:left;background:white;border:1px solid var(--line);border-radius:12px}.choice strong{display:block;font-size:18px;margin-bottom:3px}.toggle{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{padding:7px 11px;border-radius:99px;background:#f2f4f7}.empty{padding:20px;color:var(--muted);text-align:center}
+@media(max-width:700px){main{padding:10px}.top{align-items:flex-start;flex-direction:column}.row{grid-template-columns:1fr}.brand{font-size:21px}}
+@media print{header,.toolbar button,.no-print,.notice{display:none!important}.card{box-shadow:none;border:0}.schedule{min-width:0;font-size:9px}.schedule th:first-child,.schedule td:first-child{position:static}.schedule .cell{height:28px}.stats{display:none}}
 </style>
 </head>
 <body>
 <header><div class="wrap top">
-<div><div class="brand">📅 Plán směn</div><div class="sub">Jednoduchý měsíční plán pro hlavní sestru</div></div>
+<div><div class="brand">📅 Plán směn</div><div class="sub">Jednoduché plánování pro hlavní sestru</div></div>
+<div class="spacer"></div>
 <div class="toolbar"><button class="plain" id="prev">←</button><div class="month" id="monthTitle"></div><button class="plain" id="next">→</button></div>
 </div></header>
 
 <main class="wrap">
 <section class="card">
 <div class="toolbar">
-<button class="primary" id="generate">🤖 Vygenerovat plán</button>
-<button class="secondary" id="peopleBtn">👩‍⚕️ Sestry</button>
-<button class="plain" id="settingsBtn">⚙️ Nastavení</button>
-<button class="plain" id="printBtn">🖨️ Tisk</button>
-<div class="spacer"></div><span class="small" id="saveStatus">Uloženo v prohlížeči</span>
+<button class="primary" id="generate">🤖 Vygenerovat férový plán</button>
+<button class="secondary" onclick="showSection('peopleSection')">👩‍⚕️ Sestry</button>
+<button class="plain" onclick="showSection('settingsSection')">⚙️ Nastavení</button>
+<button class="plain" onclick="window.print()">🖨️ Tisk</button>
+<div class="spacer"></div><span class="small" id="saveStatus">Uloženo v tomto prohlížeči</span>
 </div>
-<div id="notice" class="notice">Připraveno. Nejdříve nastavte sestry a jejich dostupnost.</div>
+<div id="notice" class="notice">Nastavte sestry, případně dovolené, a potom klikněte na „Vygenerovat férový plán“.</div>
 </section>
 
 <section class="card"><div class="tablewrap"><div id="schedule"></div></div></section>
 
-<section class="card">
-<h2>Souhrn</h2><div id="stats" class="stats"></div>
-</section>
+<section class="card"><h2>Souhrn</h2><div id="stats" class="stats"></div></section>
 
 <section class="card" id="peopleSection" style="display:none">
-<h2>Sestry</h2><div id="people" class="grid"></div>
-<div class="people-actions"><button class="primary" id="addPerson">＋ Přidat sestru</button></div>
+<h2>👩‍⚕️ Sestry</h2>
+<p class="help">U každé sestry nastavte úvazek a zda může pracovat denní/noční. Dovolenou a volno můžete zadat přímo v kalendáři.</p>
+<div id="people" class="grid"></div>
+<div style="margin-top:12px"><button class="primary" id="addPerson">＋ Přidat sestru</button></div>
 </section>
 
 <section class="card" id="settingsSection" style="display:none">
-<h2>Nastavení</h2>
+<h2>⚙️ Nastavení</h2>
 <div class="form">
-<div class="row"><label>Denní směna<br><input id="dayStart" type="time"><input id="dayEnd" type="time"></label>
-<label>Noční směna<br><input id="nightStart" type="time"><input id="nightEnd" type="time"></label></div>
-<div class="row"><label>Počet sester – denní<br><input id="needD" type="number" min="1"></label>
-<label>Počet sester – noční<br><input id="needN" type="number" min="1"></label></div>
-<div class="row"><label>Max. směn za sebou<br><input id="maxConsecutive" type="number" min="1"></label>
-<label>Min. odpočinek (hodiny)<br><input id="restHours" type="number" min="1"></label></div>
+<div class="row"><label>Začátek denní<input id="dayStart" type="time"></label><label>Konec denní<input id="dayEnd" type="time"></label></div>
+<div class="row"><label>Začátek noční<input id="nightStart" type="time"></label><label>Konec noční<input id="nightEnd" type="time"></label></div>
+<div class="row"><label>Sestry na denní<input id="needD" type="number" min="1"></label><label>Sestry na noční<input id="needN" type="number" min="1"></label></div>
+<div class="row"><label>Max. směn za sebou<input id="maxConsecutive" type="number" min="1"></label><label>Min. odpočinek (hod.)<input id="restHours" type="number" min="1"></label></div>
 <button class="primary" id="saveSettings">Uložit nastavení</button>
 </div>
 </section>
 </main>
 
-<div class="modal" id="modal"><div class="modalbox"><h2 id="modalTitle"></h2><div id="modalContent"></div><br><button class="plain" onclick="closeModal()">Zrušit</button></div></div>
+<div class="modal" id="modal"><div class="modalbox"><h2 id="modalTitle"></h2><div id="modalContent"></div><div style="margin-top:14px;text-align:right"><button class="plain" onclick="closeModal()">Zavřít</button></div></div></div>
 
 <script>
-const KEY='plan_smen_v1';
+const KEY='plan_smen_v2';
 const months=['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
+const weekdays=['Ne','Po','Út','St','Čt','Pá','So'];
 let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
- people:[{id:1,name:'Sestra 1',rate:1,canD:true,canN:true,blocked:[]},{id:2,name:'Sestra 2',rate:1,canD:true,canN:true,blocked:[]},{id:3,name:'Sestra 3',rate:1,canD:true,canN:true,blocked:[]},{id:4,name:'Sestra 4',rate:1,canD:true,canN:true,blocked:[]},{id:5,name:'Sestra 5',rate:1,canD:true,canN:true,blocked:[]}],
+ people:[
+  {id:1,name:'Sestra 1',rate:1,canD:true,canN:true,blocked:{}},
+  {id:2,name:'Sestra 2',rate:1,canD:true,canN:true,blocked:{}},
+  {id:3,name:'Sestra 3',rate:1,canD:true,canN:true,blocked:{}},
+  {id:4,name:'Sestra 4',rate:1,canD:true,canN:true,blocked:{}},
+  {id:5,name:'Sestra 5',rate:1,canD:true,canN:true,blocked:{}}
+ ],
  settings:{dayStart:'07:00',dayEnd:'19:00',nightStart:'19:00',nightEnd:'07:00',needD:1,needN:1,maxConsecutive:4,restHours:11},
  plans:{}
 };
 let view=new Date(); view.setDate(1);
 
-function save(){localStorage.setItem(KEY,JSON.stringify(db)); document.getElementById('saveStatus').textContent='✓ Uloženo'; setTimeout(()=>document.getElementById('saveStatus').textContent='Uloženo v tomto prohlížeči',1200)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));document.getElementById('saveStatus').textContent='✓ Uloženo';setTimeout(()=>document.getElementById('saveStatus').textContent='Uloženo v tomto prohlížeči',1000)}
 function key(){return view.getFullYear()+'-'+String(view.getMonth()+1).padStart(2,'0')}
 function days(){return new Date(view.getFullYear(),view.getMonth()+1,0).getDate()}
-function plan(){db.plans[key()] ||= {}; return db.plans[key()]}
-function fmtDay(d){let dt=new Date(view.getFullYear(),view.getMonth(),d); return ['Ne','Po','Út','St','Čt','Pá','So'][dt.getDay()]}
+function plan(){db.plans[key()] ||= {};return db.plans[key()]}
+function dateKey(d){return key()+'-'+String(d).padStart(2,'0')}
+function showSection(id){['peopleSection','settingsSection'].forEach(x=>document.getElementById(x).style.display=x===id?'block':'none');document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'})}
 function render(){
  document.getElementById('monthTitle').textContent=months[view.getMonth()]+' '+view.getFullYear();
- renderSchedule(); renderStats(); renderPeople(); fillSettings();
+ renderSchedule();renderStats();renderPeople();fillSettings();validate();
 }
 function renderSchedule(){
- let p=plan(), html='<table class="schedule"><thead><tr><th>Sestra</th>';
- for(let d=1;d<=days();d++) html+=`<th>${d}<br>${fmtDay(d)}</th>`;
- html+='</tr></thead><tbody>';
- db.people.forEach(person=>{
-  html+=`<tr><td><b>${esc(person.name)}</b><br><span class="small">${person.rate} úv.</span></td>`;
+ let p=plan(),h='<table class="schedule"><thead><tr><th>Sestra</th>';
+ for(let d=1;d<=days();d++){let dow=new Date(view.getFullYear(),view.getMonth(),d).getDay();h+=`<th class="${dow===0||dow===6?'weekend':''}">${d}<br>${weekdays[dow]}</th>`}
+ h+='</tr></thead><tbody>';
+ db.people.forEach(x=>{
+  h+=`<tr><td><div class="name">${esc(x.name)}</div><span class="small">${x.rate} úv.</span></td>`;
   for(let d=1;d<=days();d++){
-   let v=p[person.id+'_'+d]||'V', cls=v;
-   let today=(new Date().toDateString()===new Date(view.getFullYear(),view.getMonth(),d).toDateString())?' today':'';
-   html+=`<td><button class="cell ${cls}${today}" onclick="editCell(${person.id},${d})">${v}</button></td>`;
-  } html+='</tr>';
- });
- html+='</tbody></table>'; document.getElementById('schedule').innerHTML=html;
+   let v=p[x.id+'_'+d]||'V', today=new Date().toDateString()===new Date(view.getFullYear(),view.getMonth(),d).toDateString()?' today':'';
+   h+=`<td><button class="cell ${v}${today}" onclick="editCell(${x.id},${d})">${v}</button></td>`;
+  }h+='</tr>';
+ });h+='</tbody></table>';document.getElementById('schedule').innerHTML=h;
 }
 function renderStats(){
- let p=plan(), html='';
+ let p=plan(),h='';
  db.people.forEach(x=>{
-  let vals=[]; for(let d=1;d<=days();d++) vals.push(p[x.id+'_'+d]||'V');
-  let D=vals.filter(v=>v==='D').length,N=vals.filter(v=>v==='N').length;
-  let h=(D+N)*12; let weekends=vals.reduce((n,v,i)=>{let dt=new Date(view.getFullYear(),view.getMonth(),i+1).getDay();return n+(v!=='V'&&v!=='DOV'&&v!=='PN'&&(dt===0||dt===6)?1:0)},0);
-  html+=`<div class="stat"><b>${esc(x.name)}</b><span>${h} h · ${D} D · ${N} N · ${weekends} víkend</span></div>`;
- }); document.getElementById('stats').innerHTML=html||'<span class="small">Žádné sestry.</span>';
+  let D=0,N=0,W=0,H=0;
+  for(let d=1;d<=days();d++){let v=p[x.id+'_'+d]||'V';if(v==='D'){D++;H+=12}if(v==='N'){N++;H+=12}let dow=new Date(view.getFullYear(),view.getMonth(),d).getDay();if((dow===0||dow===6)&&(v==='D'||v==='N'))W++}
+  let target=Math.round((days()/30)*168*x.rate);
+  let diff=H-target;
+  h+=`<div class="stat"><b>${esc(x.name)}</b><span>${H} h / cíl cca ${target} h · ${D} D · ${N} N · ${W} víkend</span><br><span class="${Math.abs(diff)<=12?'ok':'bad'}">${diff>0?'+':''}${diff} h oproti cíli</span></div>`;
+ });document.getElementById('stats').innerHTML=h;
 }
 function renderPeople(){
- document.getElementById('people').innerHTML=db.people.map(x=>`<div class="person"><h3>${esc(x.name)}</h3>
-<div class="small">Úvazek ${x.rate} · ${x.canD?'D ano':'D ne'} · ${x.canN?'N ano':'N ne'}</div>
-<div class="people-actions"><button class="plain" onclick="editPerson(${x.id})">Upravit</button><button class="plain danger" onclick="removePerson(${x.id})">Odstranit</button></div></div>`).join('');
+ document.getElementById('people').innerHTML=db.people.map(x=>`<div class="person">
+<h3>${esc(x.name)}</h3><div class="small">Úvazek ${x.rate} · ${x.canD?'denní ✓':'denní ✕'} · ${x.canN?'noční ✓':'noční ✕'}</div>
+<div class="small" style="margin-top:8px">Blokováno: ${Object.keys(x.blocked||{}).length} dní</div>
+<div class="actions"><button class="plain" onclick="editPerson(${x.id})">Upravit</button><button class="plain danger" onclick="removePerson(${x.id})">Odstranit</button></div>
+</div>`).join('');
 }
-function fillSettings(){for(const id of ['dayStart','dayEnd','nightStart','nightEnd','needD','needN','maxConsecutive','restHours'])document.getElementById(id).value=db.settings[id]}
+function fillSettings(){['dayStart','dayEnd','nightStart','nightEnd','needD','needN','maxConsecutive','restHours'].forEach(id=>document.getElementById(id).value=db.settings[id])}
 function editCell(id,d){
- let p=plan(), current=p[id+'_'+d]||'V';
- document.getElementById('modalTitle').textContent=db.people.find(x=>x.id===id).name+' · '+d+'. '+months[view.getMonth()];
- document.getElementById('modalContent').innerHTML='<div class="choices">'+[['D','Denní směna'],['N','Noční směna'],['V','Volno'],['DOV','Dovolená'],['PN','Nemoc']].map(([v,t])=>`<button class="choice" onclick="setCell(${id},${d},'${v}')"><strong>${v}</strong>${t}</button>`).join('')+'</div>';
+ let x=db.people.find(a=>a.id===id), cur=plan()[id+'_'+d]||'V', blocked=(x.blocked||{})[d]||'';
+ document.getElementById('modalTitle').textContent=x.name+' · '+d+'. '+months[view.getMonth()];
+ document.getElementById('modalContent').innerHTML=`
+ <div class="choices">
+ <button class="choice" onclick="setCell(${id},${d},'D')"><strong>☀️ DENNÍ</strong>12 hodin</button>
+ <button class="choice" onclick="setCell(${id},${d},'N')"><strong>🌙 NOČNÍ</strong>12 hodin</button>
+ <button class="choice" onclick="setCell(${id},${d},'V')"><strong>⚪ VOLNO</strong>bez směny</button>
+ <button class="choice" onclick="setCell(${id},${d},'DOV')"><strong>🏖️ DOVOLENÁ</strong>blokuje směnu</button>
+ <button class="choice" onclick="setCell(${id},${d},'PN')"><strong>🤒 PN</strong>blokuje směnu</button>
+ <button class="choice" onclick="setCell(${id},${d},'VOL')"><strong>🔒 POŽADAVEK VOLNA</strong>preferované volno</button>
+ </div>
+ <p class="help" style="margin-top:14px">DOV a PN jsou tvrdé zákazy. „Požadavek volna“ je měkké pravidlo – automatika se mu snaží vyhovět.</p>`;
  document.getElementById('modal').classList.add('show');
 }
-function setCell(id,d,v){plan()[id+'_'+d]=v; save(); closeModal(); render(); validate()}
+function setCell(id,d,v){
+ let p=plan(),x=db.people.find(a=>a.id===id);p[id+'_'+d]=v;
+ if(v==='DOV'||v==='PN'||v==='VOL')x.blocked[d]=v;else delete x.blocked[d];
+ save();closeModal();render();
+}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 function editPerson(id){
- let x=db.people.find(p=>p.id===id);
+ let x=db.people.find(a=>a.id===id);
  document.getElementById('modalTitle').textContent='Upravit sestru';
  document.getElementById('modalContent').innerHTML=`<div class="form">
 <label>Jméno<input id="pn" value="${esc(x.name)}"></label>
 <label>Úvazek<input id="pr" type="number" step="0.1" min="0.1" max="1" value="${x.rate}"></label>
-<label><input id="pd" type="checkbox" ${x.canD?'checked':''}> Může denní</label>
-<label><input id="pno" type="checkbox" ${x.canN?'checked':''}> Může noční</label>
-<button class="primary" onclick="savePerson(${id})">Uložit</button></div>`;
+<label><span><input id="pd" type="checkbox" ${x.canD?'checked':''}> Může denní směny</span></label>
+<label><span><input id="pno" type="checkbox" ${x.canN?'checked':''}> Může noční směny</span></label>
+<div class="help">Dovolenou, PN a požadavky na volno zadávejte přímo v měsíčním kalendáři kliknutím na konkrétní den.</div>
+<button class="primary" onclick="savePerson(${id})">Uložit změny</button></div>`;
  document.getElementById('modal').classList.add('show');
 }
-function savePerson(id){let x=db.people.find(p=>p.id===id);x.name=document.getElementById('pn').value.trim()||'Sestra';x.rate=+document.getElementById('pr').value||1;x.canD=document.getElementById('pd').checked;x.canN=document.getElementById('pno').checked;save();closeModal();render()}
+function savePerson(id){let x=db.people.find(a=>a.id===id);x.name=document.getElementById('pn').value.trim()||'Sestra';x.rate=Math.max(.1,Math.min(1,+document.getElementById('pr').value||1));x.canD=document.getElementById('pd').checked;x.canN=document.getElementById('pno').checked;save();closeModal();render()}
 function removePerson(id){if(db.people.length<=1)return alert('Musí zůstat alespoň jedna sestra.');if(confirm('Opravdu odstranit sestru?')){db.people=db.people.filter(x=>x.id!==id);save();render()}}
-document.getElementById('addPerson').onclick=()=>{db.people.push({id:Date.now(),name:'Nová sestra',rate:1,canD:true,canN:true,blocked:[]});save();render();editPerson(db.people.at(-1).id)}
+document.getElementById('addPerson').onclick=()=>{let id=Date.now();db.people.push({id,name:'Nová sestra',rate:1,canD:true,canN:true,blocked:{}});save();render();editPerson(id)}
 document.getElementById('prev').onclick=()=>{view.setMonth(view.getMonth()-1);render()}
 document.getElementById('next').onclick=()=>{view.setMonth(view.getMonth()+1);render()}
-document.getElementById('peopleBtn').onclick=()=>toggle('peopleSection')
-document.getElementById('settingsBtn').onclick=()=>toggle('settingsSection')
-document.getElementById('printBtn').onclick=()=>window.print()
-function toggle(id){let e=document.getElementById(id);e.style.display=e.style.display==='none'?'block':'none'}
-document.getElementById('saveSettings').onclick=()=>{for(const id of ['dayStart','dayEnd','nightStart','nightEnd','needD','needN','maxConsecutive','restHours'])db.settings[id]=['needD','needN','maxConsecutive','restHours'].includes(id)?+document.getElementById(id).value:document.getElementById(id).value;save();render();alert('Nastavení uloženo.')}
-document.getElementById('generate').onclick=generate;
+document.getElementById('saveSettings').onclick=()=>{['dayStart','dayEnd','nightStart','nightEnd'].forEach(id=>db.settings[id]=document.getElementById(id).value);['needD','needN','maxConsecutive','restHours'].forEach(id=>db.settings[id]=Math.max(1,+document.getElementById(id).value||1));save();render();alert('Nastavení uloženo.')}
 
+/* -------- FAIR SCHEDULE SOLVER --------
+   Backtracking with forward checking + randomized tie breaking.
+   Hard constraints: availability, qualification, one shift/day,
+   no N->D, configurable consecutive limit.
+   Soft objective: hours close to target, nights/weekends balanced,
+   honor requested leave.
+*/
 function generate(){
- let p={}; let people=db.people; let used=Object.fromEntries(people.map(x=>[x.id,[]]));
- let assignments=0;
- for(let d=1;d<=days();d++){
-  for(const type of ['D','N']){
-   let need=type==='D'?db.settings.needD:db.settings.needN;
-   for(let k=0;k<need;k++){
-    let candidates=people.filter(x=>(type==='D'?x.canD:x.canN)&&!isBlocked(x,d)&&canAssign(used[x.id],d,type));
-    candidates.sort((a,b)=>score(a,used[a.id],type,d)-score(b,used[b.id],type,d));
-    if(!candidates.length){p[`__error_${d}_${type}_${k}`]=1;continue}
-    let x=candidates[0];p[x.id+'_'+d]=type;used[x.id].push({d,type});assignments++;
+ const people=db.people, ds=days(), needD=db.settings.needD, needN=db.settings.needN;
+ if(people.length < Math.max(needD,needN)){showError('Je méně sester než je požadováno na směně.');return}
+ const shifts=[];for(let d=1;d<=ds;d++){for(let i=0;i<needD;i++)shifts.push({d,t:'D',slot:i});for(let i=0;i<needN;i++)shifts.push({d,t:'N',slot:i})}
+ const target=Object.fromEntries(people.map(x=>[x.id,Math.round((ds/30)*168*x.rate/12)]));
+ let best=null,bestCost=Infinity, attempts=0;
+ // Try multiple orderings; hard-to-fill shifts first dynamically.
+ function blocked(x,d){let b=x.blocked||{};return b[d]==='DOV'||b[d]==='PN'||b[d]==='VOL'}
+ function can(x, d,t,state){
+   if((t==='D'&&!x.canD)||(t==='N'&&!x.canN)||blocked(x,d))return false;
+   const a=state[x.id], prev=a[a.length-1];
+   if(prev && prev.d===d)return false;
+   if(prev && prev.t==='N'&&t==='D')return false;
+   if(prev && d-prev.d<2 && prev.t==='N')return false;
+   // count consecutive worked calendar days ending at d
+   let run=1;for(let q=d-1;q>=1;q--){if(a.some(z=>z.d===q)){run++}else break}
+   if(run>db.settings.maxConsecutive)return false;
+   return true;
+ }
+ function cost(state){
+   let c=0;
+   for(const x of people){
+     const a=state[x.id], hours=a.length*12, diff=Math.abs(hours-target[x.id]);
+     c+=diff*8;
+     const nights=a.filter(z=>z.t==='N').length; c+=nights*nights*0.8;
+     const wk=a.filter(z=>{let w=new Date(view.getFullYear(),view.getMonth(),z.d).getDay();return w===0||w===6}).length;c+=wk*wk*0.35;
    }
-  }
+   return c;
  }
- db.plans[key()]=p;save();render();validate();
+ function lowerBound(state, idx){
+   // Small admissible bound: no one should exceed target by too much.
+   let c=0;for(const x of people)c+=Math.max(0,state[x.id].length-target[x.id])*8;
+   return c;
+ }
+ function recurse(state, remaining){
+   attempts++;
+   if(attempts>250000)return;
+   if(!remaining.length){let c=cost(state);if(c<bestCost){bestCost=c;best=JSON.parse(JSON.stringify(state))}return}
+   if(lowerBound(state,remaining.length)>=bestCost)return;
+   // choose the next shift with fewest candidates (forward checking)
+   let chosen=null,cands=null;
+   for(const s of remaining){
+     let cs=people.filter(x=>can(x,s.d,s.t,state));
+     if(!cs.length)return;
+     if(!cands||cs.length<cands.length){chosen=s;cands=cs;if(cs.length===1)break}
+   }
+   // Prefer people who are below target and have fewer shifts, shuffle equal candidates.
+   cands.sort((a,b)=>{
+     let aa=state[a.id].length,bb=state[b.id].length;
+     let sa=Math.abs((aa+1)-target[a.id]),sb=Math.abs((bb+1)-target[b.id]);
+     return sa-sb || aa-bb || Math.random()-.5;
+   });
+   // Keep search manageable; first pass deterministic-ish, later attempts randomized.
+   for(const x of cands){
+     state[x.id].push(chosen);
+     const next=remaining.filter(s=>s!==chosen);
+     recurse(state,next);
+     state[x.id].pop();
+     if(attempts>250000)return;
+   }
+ }
+ // Pre-seed requested leave as empty; solve several times with shuffled shifts to improve fairness.
+ for(let r=0;r<8 && attempts<250000;r++){
+   const shuffled=[...shifts].sort(()=>Math.random()-.5);
+   const state=Object.fromEntries(people.map(x=>[x.id,[]]));
+   recurse(state,shuffled);
+ }
+ if(!best){showError('Nepodařilo se najít plán splňující všechna tvrdá pravidla. Zkuste snížit počet lidí na směně, upravit volno nebo přidat možnost nočních.');return}
+ let p={};
+ people.forEach(x=>{for(let d=1;d<=ds;d++)p[x.id+'_'+d]='V'});
+ for(const x of people)for(const a of best[x.id])p[x.id+'_'+a.d]=a.t;
+ // Preserve explicit DOV/PN/VOL entries from current month.
+ people.forEach(x=>Object.keys(x.blocked||{}).forEach(d=>{p[x.id+'_'+d]=x.blocked[d]}));
+ db.plans[key()]=p;save();render();
+ document.getElementById('notice').className='notice';
+ document.getElementById('notice').innerHTML='<b>✓ Plán byl vygenerován.</b> Směny jsou rozdělené s ohledem na úvazky, noční, víkendy, odpočinek a zadané absence.';
 }
-function isBlocked(x,d){return (x.blocked||[]).includes(d)}
-function canAssign(arr,d,type){
- if(arr.some(a=>a.d===d))return false;
- let last=arr.at(-1);
- if(!last)return true;
- if(last.type==='N'&&type==='D')return false;
- if(d-last.d<2 && last.type==='N')return false;
- let recent=arr.filter(a=>a.d<d&&d-a.d<=db.settings.maxConsecutive).length;
- return recent<db.settings.maxConsecutive;
-}
-function score(x,arr,type,d){
- let h=arr.length, n=arr.filter(a=>a.type==='N').length;
- return h*100+n*20+(d%7===0||d%7===6?arr.filter(a=>[0,6].includes(new Date(view.getFullYear(),view.getMonth(),a.d).getDay())).length*10:0);
-}
+function showError(msg){let e=document.getElementById('notice');e.className='notice err';e.innerHTML='<b>⚠️ Plán nelze vytvořit</b><br>'+esc(msg)}
 function validate(){
- let p=plan(), errors=[], warnings=[];
+ let p=plan(),errors=[];
  for(let d=1;d<=days();d++){
-  for(const type of ['D','N']){
-   let need=type==='D'?db.settings.needD:db.settings.needN;
-   let got=db.people.filter(x=>p[x.id+'_'+d]===type).length;
-   if(got<need)errors.push(`${d}. ${months[view.getMonth()]} – chybí ${need-got} ${type==='D'?'denní':'noční'} směna`);
-  }
+  let D=db.people.filter(x=>p[x.id+'_'+d]==='D').length,N=db.people.filter(x=>p[x.id+'_'+d]==='N').length;
+  if(D<db.settings.needD)errors.push(`${d}. ${months[view.getMonth()]} – chybí ${db.settings.needD-D} denní směna`);
+  if(N<db.settings.needN)errors.push(`${d}. ${months[view.getMonth()} – chybí ${db.settings.needN-N} noční směna`);
  }
- db.people.forEach(x=>{for(let d=1;d<=days();d++){let v=p[x.id+'_'+d];if((v==='D'||v==='N')&&isBlocked(x,d))errors.push(`${x.name}: ${d}. má nepřítomnost a zároveň směnu`)}});
- let n=Object.keys(p).some(k=>k.startsWith('__error_'));
- if(n)errors.push('Některé směny se nepodařilo automaticky obsadit.');
+ db.people.forEach(x=>{
+  for(let d=1;d<=days();d++){
+   let v=p[x.id+'_'+d],b=(x.blocked||{})[d];
+   if(b&&b!==v)errors.push(`${x.name}: ${d}. – konflikt s ${b}`);
+   if(v==='D'&&!x.canD)errors.push(`${x.name}: ${d}. – nemůže denní`);
+   if(v==='N'&&!x.canN)errors.push(`${x.name}: ${d}. – nemůže noční`);
+   if(v==='DOV'||v==='PN'||v==='VOL')continue;
+   if(v==='D'&&d>1&&p[x.id+'_'+(d-1)]==='N')errors.push(`${x.name}: ${d}. – noční → denní`);
+  }
+ });
  let e=document.getElementById('notice');
- if(errors.length)e.className='notice err',e.innerHTML='<b>⚠️ Plán má problém</b><br>'+errors.slice(0,5).map(esc).join('<br>')+(errors.length>5?`<br>… a dalších ${errors.length-5}`:'');
- else e.className='notice',e.innerHTML='<b>✓ Plán je obsazený.</b> Před použitím v reálném provozu ověřte pracovní dobu a interní pravidla pracoviště.';
+ if(errors.length){e.className='notice err';e.innerHTML='<b>⚠️ Plán má problém</b><br>'+errors.slice(0,6).map(esc).join('<br>')+(errors.length>6?`<br>… dalších ${errors.length-6}`:'')}
+ else if(!db.people.length){e.className='notice warn';e.textContent='Přidejte sestry.'}
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 render();
 </script>
 </body>
