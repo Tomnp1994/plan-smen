@@ -169,201 +169,138 @@ document.getElementById('saveSettings').onclick=()=>{['dayStart','dayEnd','night
 */
 function generate(){
  const people=db.people, ds=days(), needD=+db.settings.needD||1, needN=+db.settings.needN||1;
- const totalD=ds*needD, totalN=ds*needN;
- if(people.length < needD+needN){
-   showError(`Pro každé obsazení dne potřebujete alespoň ${needD+needN} různých sester.`);
+ const slots=needD+needN;
+ if(people.length<slots){
+   showError(`Máte ${people.length} sester, ale na jeden den potřebujete ${slots}.`);
    return;
  }
 
- const rateSum=people.reduce((s,x)=>s+(+x.rate||1),0);
- const targetTotal=Object.fromEntries(people.map(x=>[x.id,totalD+totalN===0?0:(totalD+totalN)*(+x.rate||1)/rateSum]));
- const targetNight=Object.fromEntries(people.map(x=>[x.id,totalN===0?0:totalN*(+x.rate||1)/rateSum]));
+ const isHardBlocked=(x,d)=>['DOV','PN'].includes((x.blocked||{})[d]);
+ const requestedOff=(x,d)=>(x.blocked||{})[d]==='VOL';
 
- function blocked(x,d){
-   const b=(x.blocked||{})[d];
-   return b==='DOV'||b==='PN';
- }
- function preferredOff(x,d){ return (x.blocked||{})[d]==='VOL'; }
-
- function canWork(state,x,d,t){
-   if(blocked(x,d)) return false;
-   if(t==='D' && !x.canD) return false;
-   if(t==='N' && !x.canN) return false;
-   if(state[x.id].byDay[d]) return false;
-   if(state[x.id].byDay[d-1]==='N' && t==='D') return false;
-   let run=0;
-   for(let q=d-1;q>=1;q--){
-     if(state[x.id].byDay[q]) run++; else break;
-   }
-   if(run>=+db.settings.maxConsecutive) return false;
+ function validDaily(state,x,d,t){
+   if(isHardBlocked(x,d))return false;
+   if(t==='D'&&!x.canD)return false;
+   if(t==='N'&&!x.canN)return false;
+   if(state[x.id].today)return false;
+   if(state[x.id].last==='N'&&t==='D')return false;
+   if(state[x.id].run >= (+db.settings.maxConsecutive||4))return false;
    return true;
  }
 
- function makeState(){
-   return Object.fromEntries(people.map(x=>[x.id,{
-     byDay:{}, total:0, nights:0, weekends:0, lastType:null
-   }]));
+ function emptyState(){
+   return Object.fromEntries(people.map(x=>[x.id,{last:null,run:0,total:0,nights:0,weekends:0,today:false,byDay:{}}]));
  }
 
- function finalCost(state){
-   let cost=0;
-   const maxTotal=Math.max(...people.map(x=>state[x.id].total));
-   const minTotal=Math.min(...people.map(x=>state[x.id].total));
-   const maxN=Math.max(...people.map(x=>state[x.id].nights));
-   const minN=Math.min(...people.map(x=>state[x.id].nights));
+ const totalTarget={};
+ const nightTarget={};
+ const rateSum=people.reduce((a,x)=>a+(+x.rate||1),0);
+ const totalSlots=ds*(needD+needN);
+ people.forEach(x=>{
+   totalTarget[x.id]=totalSlots*(+x.rate||1)/rateSum;
+   nightTarget[x.id]=(ds*needN)*(+x.rate||1)/rateSum;
+ });
 
-   // Silná priorita: směny i noční musí být rovnoměrné.
-   cost += Math.pow(maxTotal-minTotal,2)*180;
-   cost += Math.pow(maxN-minN,2)*260;
+ function assign(state,d,t,x){
+   const w=[0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay());
+   state[x.id].today=true;
+   state[x.id].last=t;
+   state[x.id].run++;
+   state[x.id].total++;
+   if(t==='N')state[x.id].nights++;
+   if(w)state[x.id].weekends++;
+   state[x.id].byDay[d]=t;
+ }
 
+ function endDay(state){
+   people.forEach(x=>{if(!state[x.id].today){state[x.id].last=null;state[x.id].run=0}});
+ }
+
+ function score(state,d,t,x){
+   const s=state[x.id];
+   let c=0;
+   c += Math.pow((s.total+1)-totalTarget[x.id],2)*28;
+   c += Math.pow((s.nights+(t==='N'?1:0))-nightTarget[x.id],2)*95;
+   if(requestedOff(x,d))c+=100;
+   if([0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay()))c+=s.weekends*1.5;
+   return c;
+ }
+
+ function makeRoundRobin(offsetD,offsetN){
+   if(needD!==1||needN!==1)return null;
+   const state=emptyState();
+   for(let d=1;d<=ds;d++){
+     people.forEach(x=>state[x.id].today=false);
+     let D=people[(d-1+offsetD)%people.length];
+     let N=people[(d-1+offsetN)%people.length];
+     if(D.id===N.id||!validDaily(state,D,d,'D')||!validDaily(state,N,d,'N'))return null;
+     // Explicit preferences: hard blocks already checked; VOL is okay but penalized elsewhere.
+     assign(state,d,'D',D);
+     assign(state,d,'N',N);
+     endDay(state);
+   }
+   return state;
+ }
+
+ function objective(state){
+   let c=0;
+   const totals=people.map(x=>state[x.id].total);
+   const nights=people.map(x=>state[x.id].nights);
+   c+=Math.pow(Math.max(...totals)-Math.min(...totals),2)*900;
+   c+=Math.pow(Math.max(...nights)-Math.min(...nights),2)*1800;
    for(const x of people){
-     const st=state[x.id];
-     cost += Math.pow(st.total-targetTotal[x.id],2)*18;
-     cost += Math.pow(st.nights-targetNight[x.id],2)*42;
-
-     const targetWeekend = (Math.floor((ds*([0,6].filter(Boolean).length||2))/7) || 1) * (x.rate||1)/rateSum;
-     cost += Math.pow(st.weekends-targetWeekend,2)*4;
-
-     for(let d=1;d<=ds;d++){
-       if(preferredOff(x,d) && st.byDay[d]) cost += 35;
-     }
+     c+=Math.pow(state[x.id].total-totalTarget[x.id],2)*70;
+     c+=Math.pow(state[x.id].nights-nightTarget[x.id],2)*180;
+     for(let d=1;d<=ds;d++)if(requestedOff(x,d)&&state[x.id].byDay[d])c+=250;
    }
-   return cost;
+   return c;
  }
 
- let best=null, bestCost=Infinity, nodes=0, deadline=Date.now()+4000;
+ let best=null,bestCost=Infinity;
 
- function lowerBound(state,d){
-   // Dolní odhad pouze pro rovnováhu total/nocí, aby šlo bezpečně ořezávat.
-   if(!best) return 0;
-   let lb=0;
-   const remainingDays=ds-d+1;
-   for(const x of people){
-     const st=state[x.id];
-     const minFinal=st.total;
-     const maxFinal=st.total+remainingDays*(needD+needN);
-     const t=targetTotal[x.id];
-     if(t<minFinal) lb += Math.pow(minFinal-t,2)*18;
-     else if(t>maxFinal) lb += Math.pow(t-maxFinal,2)*18;
-   }
-   return lb;
- }
-
- function buildPairs(state,d){
-   const Ds=people.filter(x=>canWork(state,x,d,'D'));
-   const Ns=people.filter(x=>canWork(state,x,d,'N'));
-   if(Ds.length<needD || Ns.length<needN) return [];
-
-   const out=[];
-   function comb(arr,k,start,prefix){
-     if(k===0){out.push(prefix.slice());return}
-     for(let i=start;i<=arr.length-k;i++){
-       prefix.push(arr[i]);comb(arr,k-1,i+1,prefix);prefix.pop();
-     }
-   }
-   const dSets=[];comb(Ds,needD,0,[],dSets);
-   const nSets=[];comb(Ns,needN,0,[],nSets);
-
-   for(const D of dSets) for(const N of nSets){
-     const ids=new Set();
-     let ok=true;
-     for(const x of [...D,...N]){
-       if(ids.has(x.id)){ok=false;break}
-       ids.add(x.id);
-     }
-     if(ok) out.push({D,N});
-   }
-
-   const weekend=[0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay());
-   out.sort((a,b)=>{
-     function pairCost(pair){
-       let c=0;
-       for(const x of pair.D){
-         c+=Math.pow(state[x.id].total+1-targetTotal[x.id],2)*18;
-         c+=Math.pow(state[x.id].nights-targetNight[x.id],2)*18;
-         if(preferredOff(x,d)) c+=35;
-         if(weekend)c+=Math.pow(state[x.id].weekends+1,2)*2;
+ // For the common case (5 nurses, one D + one N), start from balanced cyclic plans.
+ if(needD===1&&needN===1){
+   for(let od=0;od<people.length;od++){
+     for(let on=0;on<people.length;on++){
+       const candidate=makeRoundRobin(od,on);
+       if(candidate){
+         const c=objective(candidate);
+         if(c<bestCost){best=c;bestCost=candidate?c:bestCost;best=candidate;}
        }
-       for(const x of pair.N){
-         c+=Math.pow(state[x.id].total+1-targetTotal[x.id],2)*18;
-         c+=Math.pow(state[x.id].nights+1-targetNight[x.id],2)*55;
-         if(preferredOff(x,d)) c+=35;
-         if(weekend)c+=Math.pow(state[x.id].weekends+1,2)*2;
-       }
-       return c+Math.random()*0.5;
      }
-     return pairCost(a)-pairCost(b);
-   });
-   return out;
- }
-
- function apply(state,d,pair){
-   const weekend=[0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay());
-   for(const x of pair.D){
-     state[x.id].byDay[d]='D';state[x.id].total++;
-     if(weekend)state[x.id].weekends++;
-   }
-   for(const x of pair.N){
-     state[x.id].byDay[d]='N';state[x.id].total++;state[x.id].nights++;
-     if(weekend)state[x.id].weekends++;
-   }
- }
- function undo(state,d,pair){
-   const weekend=[0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay());
-   for(const x of pair.D){
-     delete state[x.id].byDay[d];state[x.id].total--;
-     if(weekend)state[x.id].weekends--;
-   }
-   for(const x of pair.N){
-     delete state[x.id].byDay[d];state[x.id].total--;state[x.id].nights--;
-     if(weekend)state[x.id].weekends--;
    }
  }
 
- function dfs(state,d){
-   nodes++;
-   if(Date.now()>deadline || nodes>800000) return;
+ // Fallback: chronological greedy repair, repeated many times.
+ function greedyAttempt(){
+   const state=emptyState();
+   for(let d=1;d<=ds;d++){
+     people.forEach(x=>state[x.id].today=false);
 
-   if(d>ds){
-     const c=finalCost(state);
-     if(c<bestCost){
-       bestCost=c;
-       best=JSON.parse(JSON.stringify(state));
+     for(const type of Array(needD).fill('D').concat(Array(needN).fill('N'))){
+       const candidates=people.filter(x=>validDaily(state,x,d,type));
+       if(!candidates.length)return null;
+       candidates.sort((a,b)=>score(state,d,type,a)-score(state,d,type,b)+Math.random()-0.5);
+       const x=candidates[0];
+       assign(state,d,type,x);
      }
-     return;
+     endDay(state);
    }
-
-   if(lowerBound(state,d)>=bestCost) return;
-
-   const pairs=buildPairs(state,d);
-   if(!pairs.length)return;
-
-   // Na konci měsíce zpřísni hledání: preferuj kandidáty, kteří mají
-   // stále největší "dluh" vůči cílovému počtu nočních/hodin.
-   for(const pair of pairs){
-     apply(state,d,pair);
-
-     // Jednoduchý forward check pro další den.
-     if(d===ds || buildPairs(state,d+1).length>0){
-       dfs(state,d+1);
-     }
-
-     undo(state,d,pair);
-     if(Date.now()>deadline || nodes>800000) return;
-   }
+   return state;
  }
 
- // Více nezávislých pokusů. Nebereme první nalezené řešení;
- // vybereme nejlepší nalezený celý měsíc.
- for(let attempt=0;attempt<25;attempt++){
-   deadline=Date.now()+350;
-   nodes=0;
-   const state=makeState();
-   dfs(state,1);
+ for(let i=0;i<3000;i++){
+   const candidate=greedyAttempt();
+   if(!candidate)continue;
+   const c=objective(candidate);
+   if(c<bestCost){best=candidate;bestCost=c}
+   const nt=people.map(x=>candidate[x.id].nights);
+   const tt=people.map(x=>candidate[x.id].total);
+   if(Math.max(...nt)-Math.min(...nt)<=1 && Math.max(...tt)-Math.min(...tt)<=1)break;
  }
 
  if(!best){
-   showError('Nepodařilo se najít kompletní plán. Zkontrolujte dovolené, PN, možnost nočních a počet sester na směně.');
+   showError('Nepodařilo se vytvořit kompletní plán při současných omezeních. Zkontrolujte hlavně DOV, PN, možnost nočních a počet sester na směně.');
    return;
  }
 
@@ -373,22 +310,15 @@ function generate(){
      const b=(x.blocked||{})[d];
      p[x.id+'_'+d]=b==='DOV'||b==='PN'?b:(b==='VOL'?'VOL':'V');
    }
-   for(let d=1;d<=ds;d++){
-     const v=best[x.id].byDay[d];
-     if(v) p[x.id+'_'+d]=v;
-   }
+   for(let d=1;d<=ds;d++)if(best[x.id].byDay[d])p[x.id+'_'+d]=best[x.id].byDay[d];
  }
  db.plans[key()]=p;
  save();render();
 
- const totals=people.map(x=>best[x.id].total*12);
- const nights=people.map(x=>best[x.id].nights);
- const hMin=Math.min(...totals),hMax=Math.max(...totals);
- const nMin=Math.min(...nights),nMax=Math.max(...nights);
-
+ const hs=people.map(x=>best[x.id].total*12), ns=people.map(x=>best[x.id].nights);
  document.getElementById('notice').className='notice';
  document.getElementById('notice').innerHTML=
-  `<b>✓ Plán byl vygenerován.</b> Rozdělení: ${hMin}–${hMax} hodin na sestru a ${nMin}–${nMax} nočních na sestru. Cílem je co nejrovnoměrnější rozdělení podle úvazku.`;
+  `<b>✓ Plán byl vygenerován.</b> ${Math.min(...hs)}–${Math.max(...hs)} hodin a ${Math.min(...ns)}–${Math.max(...ns)} nočních na sestru.`;
 }
 function showError(msg){let e=document.getElementById('notice');e.className='notice err';e.innerHTML='<b>⚠️ Plán nelze vytvořit</b><br>'+esc(msg)}
 
@@ -479,6 +409,13 @@ setTimeout(()=>window.print(),350);
 }
 function validate(){
  let p=plan(),errors=[];
+ const hasRealContent=Object.values(p).some(v=>['D','N','DOV','PN','VOL'].includes(v));
+ if(!hasRealContent){
+   const e=document.getElementById('notice');
+   e.className='notice';
+   e.innerHTML='<b>ℹ️ Tento měsíc zatím nemá plán.</b> Klikněte na „Vygenerovat férový plán“. Dovolenou nebo volno můžete přidat kliknutím na konkrétní den.';
+   return;
+ }
  for(let d=1;d<=days();d++){
   let D=db.people.filter(x=>p[x.id+'_'+d]==='D').length,N=db.people.filter(x=>p[x.id+'_'+d]==='N').length;
   if(D<db.settings.needD)errors.push(`${d}. ${months[view.getMonth()]} – chybí ${db.settings.needD-D} denní směna`);
