@@ -8,7 +8,7 @@
 <style>
 :root {
     --bg: #f4f7fb;
-    --card: #ffffff;
+    --card: #fff;
     --text: #172033;
     --muted: #687386;
     --primary: #2563eb;
@@ -28,7 +28,7 @@
 
 body {
     margin: 0;
-    font-family: Inter, Arial, sans-serif;
+    font-family: Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
 }
@@ -51,7 +51,7 @@ header p {
 
 .container {
     max-width: 1600px;
-    margin: 0 auto;
+    margin: auto;
     padding: 22px;
 }
 
@@ -78,7 +78,7 @@ header p {
 label {
     display: block;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: bold;
     margin-bottom: 6px;
 }
 
@@ -93,7 +93,7 @@ select {
     width: 100%;
     border: 1px solid var(--border);
     border-radius: 7px;
-    padding: 9px 10px;
+    padding: 9px;
     background: white;
 }
 
@@ -106,7 +106,7 @@ button {
     border-radius: 7px;
     padding: 9px 13px;
     cursor: pointer;
-    font-weight: 600;
+    font-weight: bold;
 }
 
 .btn-primary {
@@ -126,16 +126,6 @@ button {
 .btn-danger {
     background: #fee2e2;
     color: #991b1b;
-}
-
-.btn-success {
-    background: #dcfce7;
-    color: #166534;
-}
-
-button:disabled {
-    opacity: .5;
-    cursor: not-allowed;
 }
 
 .button-row {
@@ -161,12 +151,13 @@ button:disabled {
 }
 
 .nurse-name {
-    font-weight: 600;
+    font-weight: bold;
 }
 
 .nurse-contract {
     color: var(--muted);
     font-size: 12px;
+    margin-top: 3px;
 }
 
 .small {
@@ -275,7 +266,7 @@ button:disabled {
     left: 0;
     background: white;
     z-index: 4;
-    min-width: 170px;
+    min-width: 220px;
     text-align: left;
 }
 
@@ -290,19 +281,19 @@ button:disabled {
 .day-cell {
     background: var(--day);
     color: #1e40af;
-    font-weight: 700;
+    font-weight: bold;
 }
 
 .night-cell {
     background: var(--night);
     color: #3730a3;
-    font-weight: 700;
+    font-weight: bold;
 }
 
 .vacation-cell {
     background: var(--vacation);
     color: #92400e;
-    font-weight: 700;
+    font-weight: bold;
 }
 
 .off-cell {
@@ -318,6 +309,16 @@ button:disabled {
 
 .shift-cell:hover {
     outline: 2px solid var(--primary);
+}
+
+.nurse-summary {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.nurse-summary strong {
+    color: var(--text);
 }
 
 .legend {
@@ -362,7 +363,7 @@ button:disabled {
 
 .stat-value {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: bold;
     margin-top: 3px;
 }
 
@@ -378,17 +379,13 @@ button:disabled {
     text-align: left;
 }
 
-.progress {
-    height: 7px;
-    background: #e5e7eb;
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 7px;
-}
-
-.progress div {
-    height: 100%;
-    background: var(--primary);
+.help {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    border-radius: 8px;
+    padding: 11px;
+    font-size: 13px;
 }
 
 .generated-info {
@@ -402,19 +399,10 @@ button:disabled {
 
 .month-title {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: bold;
 }
 
-.help {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #1e40af;
-    border-radius: 8px;
-    padding: 11px;
-    font-size: 13px;
-}
-
-@media(max-width: 900px) {
+@media(max-width:900px) {
     .grid {
         grid-template-columns: 1fr;
     }
@@ -425,7 +413,7 @@ button:disabled {
     }
 }
 
-@media(max-width: 600px) {
+@media(max-width:600px) {
     .requirements-grid,
     .stats {
         grid-template-columns: 1fr;
@@ -445,7 +433,6 @@ button:disabled {
     .sidebar,
     .tabs,
     .no-print,
-    .button-row,
     .legend {
         display: none !important;
     }
@@ -519,7 +506,9 @@ button:disabled {
                 <div class="form-row">
                     <label for="fund">Fond hodin</label>
                     <input id="fund" type="number" min="0" step="0.5" value="160">
-                    <div class="small">Základní měsíční fond pro plný úvazek.</div>
+                    <div class="small">
+                        Fond pro plný úvazek.
+                    </div>
                 </div>
             </div>
 
@@ -533,6 +522,7 @@ button:disabled {
 
                 <div class="form-row">
                     <label for="nurseContract">Úvazek</label>
+
                     <select id="nurseContract">
                         <option value="1">1,0</option>
                         <option value="0.9">0,9</option>
@@ -560,49 +550,61 @@ button:disabled {
             <div class="card">
                 <h2>Pravidla směn</h2>
 
-                <div class="form-row">
-                    <label>Počet sester</label>
-                    <input value="3 denní / 2 noční" disabled>
-                </div>
-
-                <div class="form-row">
-                    <label>Zakázáno</label>
-                    <input value="3 směny za sebou" disabled>
-                </div>
-
                 <div class="small">
+                    <b>Denní:</b> 3 sestry<br>
+                    <b>Noční:</b> 2 sestry<br><br>
+
                     Sobota: pouze denní<br>
-                    Neděle: pouze noční<br>
-                    Noční směna může být označena jako „do půlnoci“.
+                    Neděle: pouze noční<br><br>
+
+                    <b>Max. 2 směny za sebou.</b><br>
+
+                    Po 2 nočních za sebou musí být
+                    minimálně <b>1,5 dne volna</b>.<br><br>
+
+                    Pravidlo se kontroluje i při přechodu
+                    mezi měsíci.
                 </div>
             </div>
 
         </aside>
 
-        <!-- HLAVNÍ PANEL -->
+        <!-- HLAVNÍ ČÁST -->
         <main>
 
             <div class="tabs no-print">
-                <button class="tab active" onclick="showTab('requirements', this)">
+
+                <button
+                    class="tab active"
+                    onclick="showTab('requirements', this)">
                     1. Požadavky
                 </button>
-                <button class="tab" onclick="showTab('schedule', this)">
+
+                <button
+                    class="tab"
+                    onclick="showTab('schedule', this)">
                     2. Rozpis
                 </button>
-                <button class="tab" onclick="showTab('statistics', this)">
+
+                <button
+                    class="tab"
+                    onclick="showTab('statistics', this)">
                     3. Statistiky
                 </button>
+
             </div>
 
             <!-- POŽADAVKY -->
+
             <section id="requirements" class="tab-content active">
 
                 <div class="card">
+
                     <h2>Požadavky a dovolené</h2>
 
                     <div class="help">
-                        Nejprve zde zadej, kdy jednotlivé sestry nemohou pracovat.
-                        Požadavky budou při generování respektovány.
+                        Nejprve zadej všechny dovolené a další omezení.
+                        Potom klikni na „Generovat směny“.
                     </div>
 
                     <div style="height:15px"></div>
@@ -610,80 +612,131 @@ button:disabled {
                     <div class="requirements-grid">
 
                         <div class="requirement">
+
                             <strong>Sestra</strong>
+
                             <select id="absenceNurse"></select>
+
                         </div>
 
                         <div class="requirement">
+
                             <strong>Datum</strong>
-                            <input id="absenceDate" type="date">
+
+                            <input
+                                id="absenceDate"
+                                type="date">
+
                         </div>
 
                         <div class="requirement">
+
                             <strong>Typ</strong>
+
                             <select id="absenceType">
-                                <option value="vacation">Dovolená</option>
-                                <option value="unavailable">Nemůže pracovat</option>
-                                <option value="day">Pouze denní</option>
-                                <option value="night">Pouze noční</option>
+
+                                <option value="vacation">
+                                    Dovolená
+                                </option>
+
+                                <option value="unavailable">
+                                    Nemůže pracovat
+                                </option>
+
+                                <option value="day">
+                                    Pouze denní
+                                </option>
+
+                                <option value="night">
+                                    Pouze noční
+                                </option>
+
                             </select>
+
                         </div>
 
                     </div>
 
                     <div style="height:12px"></div>
 
-                    <button class="btn-primary" onclick="addAbsence()">
+                    <button
+                        class="btn-primary"
+                        onclick="addAbsence()">
                         + Přidat požadavek
                     </button>
+
                 </div>
 
                 <div class="card">
+
                     <h2>Zadané požadavky</h2>
+
                     <div id="absenceList"></div>
+
                 </div>
 
                 <div class="card">
+
                     <h2>Akce</h2>
 
                     <div class="button-row">
-                        <button class="btn-primary" onclick="generateSchedule()">
+
+                        <button
+                            class="btn-primary"
+                            onclick="generateSchedule()">
                             ⚙ Generovat směny
                         </button>
 
-                        <button class="btn-secondary" onclick="clearSchedule()">
+                        <button
+                            class="btn-secondary"
+                            onclick="clearSchedule()">
                             Vymazat rozpis
                         </button>
+
                     </div>
+
                 </div>
 
             </section>
 
             <!-- ROZPIS -->
+
             <section id="schedule" class="tab-content">
 
                 <div class="card">
 
                     <div class="generated-info">
+
                         <div>
-                            <div class="month-title" id="scheduleTitle">
+
+                            <div
+                                class="month-title"
+                                id="scheduleTitle">
                                 Rozpis směn
                             </div>
+
                             <div class="small">
                                 Kliknutím na buňku lze směnu ručně změnit.
                             </div>
+
                         </div>
 
                         <div class="button-row no-print">
-                            <button class="btn-primary" onclick="window.print()">
+
+                            <button
+                                class="btn-primary"
+                                onclick="window.print()">
                                 🖨 Export do PDF / Tisk
                             </button>
+
                         </div>
+
                     </div>
 
                     <div id="scheduleWarnings"></div>
 
                     <div class="legend">
+
                         <span>
                             <i class="legend-box day-cell"></i>
                             Denní
@@ -696,12 +749,18 @@ button:disabled {
 
                         <span>
                             <i class="legend-box vacation-cell"></i>
-                            Dovolená / absence
+                            Dovolená
                         </span>
+
                     </div>
 
                     <div class="schedule-wrapper">
-                        <table class="schedule" id="scheduleTable"></table>
+
+                        <table
+                            class="schedule"
+                            id="scheduleTable">
+                        </table>
+
                     </div>
 
                 </div>
@@ -709,135 +768,260 @@ button:disabled {
             </section>
 
             <!-- STATISTIKY -->
+
             <section id="statistics" class="tab-content">
 
                 <div class="card">
+
                     <h2>Rozdělení směn</h2>
 
                     <div id="statisticsContent"></div>
+
                 </div>
 
             </section>
 
         </main>
+
     </div>
 </div>
 
+
 <script>
+
 /* =========================================================
    DATA
 ========================================================= */
 
-const STORAGE_KEY = "dialyza-shifts-v1";
+const STORAGE_KEY = "dialyza-shifts-v2";
 
 let state = {
     nurses: [],
     absences: {},
-    schedules: {},
-    previousMonthLastShifts: {}
+    schedules: {}
 };
 
 const monthNames = [
-    "Leden", "Únor", "Březen", "Duben",
-    "Květen", "Červen", "Červenec", "Srpen",
-    "Září", "Říjen", "Listopad", "Prosinec"
+    "Leden",
+    "Únor",
+    "Březen",
+    "Duben",
+    "Květen",
+    "Červen",
+    "Červenec",
+    "Srpen",
+    "Září",
+    "Říjen",
+    "Listopad",
+    "Prosinec"
 ];
 
+/*
+    D = denní
+    N = plná noční
+    NS = noční do půlnoci
+    O = volno
+*/
+
 const shiftHours = {
-    day: 12,
-    night: 12,
-    nightShort: 6
+    D: 12,
+    N: 12,
+    NS: 6
 };
 
+
 /* =========================================================
-   INITIALIZATION
+   START
 ========================================================= */
 
 function init() {
+
     loadState();
 
     const now = new Date();
 
-    const month = document.getElementById("month");
+    const month =
+        document.getElementById("month");
+
     monthNames.forEach((name, index) => {
-        const option = document.createElement("option");
+
+        const option =
+            document.createElement("option");
+
         option.value = index;
         option.textContent = name;
+
         month.appendChild(option);
     });
 
     month.value = now.getMonth();
-    document.getElementById("year").value = now.getFullYear();
+
+    document.getElementById("year").value =
+        now.getFullYear();
 
     renderAll();
 }
 
+
 function loadState() {
-    const saved = localStorage.getItem(STORAGE_KEY);
 
-    if (saved) {
-        try {
-            state = JSON.parse(saved);
-        } catch (e) {
-            console.error(e);
-        }
+    const saved =
+        localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) return;
+
+    try {
+        state = JSON.parse(saved);
+    } catch(e) {
+        console.error(e);
     }
 
-    if (!state.nurses) state.nurses = [];
-    if (!state.absences) state.absences = {};
-    if (!state.schedules) state.schedules = {};
-    if (!state.previousMonthLastShifts) {
-        state.previousMonthLastShifts = {};
-    }
+    if (!state.nurses)
+        state.nurses = [];
+
+    if (!state.absences)
+        state.absences = {};
+
+    if (!state.schedules)
+        state.schedules = {};
 }
+
 
 function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(state)
+    );
 }
+
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
 function currentKey() {
-    const year = Number(document.getElementById("year").value);
-    const month = Number(document.getElementById("month").value);
 
-    return `${year}-${String(month + 1).padStart(2, "0")}`;
+    const year =
+        Number(document.getElementById("year").value);
+
+    const month =
+        Number(document.getElementById("month").value);
+
+    return `${year}-${String(month + 1).padStart(2,"0")}`;
 }
 
-function daysInMonth(year, month) {
-    return new Date(year, month + 1, 0).getDate();
-}
-
-function dateKey(year, month, day) {
-    return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
 
 function getMonthData() {
-    const year = Number(document.getElementById("year").value);
-    const month = Number(document.getElementById("month").value);
+
+    const year =
+        Number(document.getElementById("year").value);
+
+    const month =
+        Number(document.getElementById("month").value);
 
     return {
         year,
         month,
-        days: daysInMonth(year, month),
+        days: new Date(year, month + 1, 0).getDate(),
         key: currentKey()
     };
 }
 
-function weekday(year, month, day) {
-    return new Date(year, month, day).getDay();
+
+function dateKey(year, month, day) {
+
+    return `${year}-${String(month + 1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
 }
 
+
+function parseDate(dateString) {
+
+    return new Date(
+        dateString + "T12:00:00"
+    );
+}
+
+
+function addDays(dateString, amount) {
+
+    const date = parseDate(dateString);
+
+    date.setDate(
+        date.getDate() + amount
+    );
+
+    return `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+    ).padStart(2,"0")}-${String(
+        date.getDate()
+    ).padStart(2,"0")}`;
+}
+
+
+function weekday(year, month, day) {
+
+    return new Date(
+        year,
+        month,
+        day
+    ).getDay();
+}
+
+
 function weekdayName(day) {
+
     return [
-        "Ne", "Po", "Út", "St", "Čt", "Pá", "So"
+        "Ne",
+        "Po",
+        "Út",
+        "St",
+        "Čt",
+        "Pá",
+        "So"
     ][day];
 }
 
-function showAlert(message, type = "warning") {
-    const el = document.getElementById("globalAlert");
+
+function formatDate(date) {
+
+    const p = date.split("-");
+
+    return `${p[2]}.${p[1]}.${p[0]}`;
+}
+
+
+function formatContract(value) {
+
+    return String(value).replace(".",",");
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+
+function isWorking(shift) {
+
+    return (
+        shift === "D" ||
+        shift === "N" ||
+        shift === "NS"
+    );
+}
+
+
+function showAlert(message,type="warning") {
+
+    const el =
+        document.getElementById("globalAlert");
 
     el.innerHTML = `
         <div class="alert alert-${type}">
@@ -847,22 +1031,34 @@ function showAlert(message, type = "warning") {
 
     setTimeout(() => {
         el.innerHTML = "";
-    }, 5000);
+    },5000);
 }
 
+
 /* =========================================================
-   NURSES
+   SESTRY
 ========================================================= */
 
 function addNurse() {
-    const nameInput = document.getElementById("nurseName");
-    const contractInput = document.getElementById("nurseContract");
 
-    const name = nameInput.value.trim();
-    const contract = Number(contractInput.value);
+    const name =
+        document.getElementById("nurseName")
+        .value
+        .trim();
+
+    const contract =
+        Number(
+            document.getElementById("nurseContract")
+            .value
+        );
 
     if (!name) {
-        showAlert("Zadej jméno sestry.", "danger");
+
+        showAlert(
+            "Zadej jméno sestry.",
+            "danger"
+        );
+
         return;
     }
 
@@ -872,97 +1068,153 @@ function addNurse() {
         contract
     });
 
-    nameInput.value = "";
+    document.getElementById("nurseName").value = "";
 
     saveState();
     renderAll();
 }
 
+
 function removeNurse(id) {
-    const nurse = state.nurses.find(n => n.id === id);
+
+    const nurse =
+        state.nurses.find(n => n.id === id);
 
     if (!nurse) return;
 
-    if (!confirm(`Opravdu odstranit sestru ${nurse.name}?`)) {
+    if (!confirm(
+        `Opravdu odstranit sestru ${nurse.name}?`
+    )) {
         return;
     }
 
-    state.nurses = state.nurses.filter(n => n.id !== id);
+    state.nurses =
+        state.nurses.filter(
+            n => n.id !== id
+        );
 
-    Object.keys(state.absences).forEach(key => {
-        state.absences[key] =
-            state.absences[key].filter(a => a.nurseId !== id);
-    });
+    Object.keys(state.absences)
+        .forEach(date => {
 
-    Object.keys(state.schedules).forEach(key => {
-        if (state.schedules[key]) {
-            delete state.schedules[key][id];
-        }
-    });
+            state.absences[date] =
+                state.absences[date]
+                    .filter(a => a.nurseId !== id);
+
+        });
+
+    Object.keys(state.schedules)
+        .forEach(month => {
+
+            if (!state.schedules[month])
+                return;
+
+            delete state.schedules[month][id];
+
+        });
 
     saveState();
     renderAll();
 }
 
+
 function renderNurses() {
-    const list = document.getElementById("nurseList");
+
+    const list =
+        document.getElementById("nurseList");
 
     if (!state.nurses.length) {
+
         list.innerHTML = `
             <div class="small">
                 Zatím nejsou přidány žádné sestry.
             </div>
         `;
+
         return;
     }
 
-    list.innerHTML = state.nurses.map(nurse => `
-        <div class="nurse-item">
-            <div>
-                <div class="nurse-name">${escapeHtml(nurse.name)}</div>
-                <div class="nurse-contract">
-                    Úvazek ${formatContract(nurse.contract)}
+    list.innerHTML =
+        state.nurses.map(nurse => `
+
+            <div class="nurse-item">
+
+                <div>
+
+                    <div class="nurse-name">
+                        ${escapeHtml(nurse.name)}
+                    </div>
+
+                    <div class="nurse-contract">
+                        Úvazek ${formatContract(nurse.contract)}
+                    </div>
+
                 </div>
+
+                <button
+                    class="btn-danger"
+                    onclick="removeNurse('${nurse.id}')">
+                    ×
+                </button>
+
             </div>
 
-            <button
-                class="btn-danger"
-                onclick="removeNurse('${nurse.id}')"
-                title="Odstranit sestru">
-                ×
-            </button>
-        </div>
-    `).join("");
+        `).join("");
 }
 
-function formatContract(value) {
-    return String(value).replace(".", ",");
-}
 
 /* =========================================================
-   ABSENCES
+   ABSENCE
 ========================================================= */
 
+function renderNurseSelect() {
+
+    const select =
+        document.getElementById("absenceNurse");
+
+    select.innerHTML =
+        state.nurses.map(nurse => `
+            <option value="${nurse.id}">
+                ${escapeHtml(nurse.name)}
+            </option>
+        `).join("");
+}
+
+
 function addAbsence() {
-    const nurseId = document.getElementById("absenceNurse").value;
-    const date = document.getElementById("absenceDate").value;
-    const type = document.getElementById("absenceType").value;
+
+    const nurseId =
+        document.getElementById("absenceNurse").value;
+
+    const date =
+        document.getElementById("absenceDate").value;
+
+    const type =
+        document.getElementById("absenceType").value;
 
     if (!nurseId || !date) {
-        showAlert("Vyber sestru a datum.", "danger");
+
+        showAlert(
+            "Vyber sestru a datum.",
+            "danger"
+        );
+
         return;
     }
 
-    if (!state.absences[date]) {
+    if (!state.absences[date])
         state.absences[date] = [];
-    }
 
-    const exists = state.absences[date].some(
-        a => a.nurseId === nurseId
-    );
+    const exists =
+        state.absences[date]
+            .some(a => a.nurseId === nurseId);
 
     if (exists) {
-        showAlert("Pro tuto sestru už je na tento den požadavek zadaný.", "warning");
+
+        showAlert(
+            "Pro tuto sestru už je tento den požadavek zadaný.",
+            "warning"
+        );
+
         return;
     }
 
@@ -975,26 +1227,36 @@ function addAbsence() {
     renderAll();
 }
 
-function removeAbsence(date, nurseId) {
-    if (!state.absences[date]) return;
+
+function getAbsence(nurseId,date) {
+
+    return (
+        state.absences[date] || []
+    ).find(
+        a => a.nurseId === nurseId
+    );
+}
+
+
+function removeAbsence(date,nurseId) {
+
+    if (!state.absences[date])
+        return;
 
     state.absences[date] =
-        state.absences[date].filter(a => a.nurseId !== nurseId);
+        state.absences[date]
+            .filter(a => a.nurseId !== nurseId);
 
-    if (!state.absences[date].length) {
+    if (!state.absences[date].length)
         delete state.absences[date];
-    }
 
     saveState();
     renderAll();
 }
 
-function getAbsence(nurseId, date) {
-    return (state.absences[date] || [])
-        .find(a => a.nurseId === nurseId);
-}
 
 function absenceText(type) {
+
     return {
         vacation: "Dovolená",
         unavailable: "Nemůže pracovat",
@@ -1003,459 +1265,649 @@ function absenceText(type) {
     }[type] || type;
 }
 
-function renderNurseSelect() {
-    const select = document.getElementById("absenceNurse");
-
-    select.innerHTML = state.nurses.map(nurse => `
-        <option value="${nurse.id}">
-            ${escapeHtml(nurse.name)}
-        </option>
-    `).join("");
-}
 
 function renderAbsences() {
-    const container = document.getElementById("absenceList");
+
+    const container =
+        document.getElementById("absenceList");
 
     const entries = [];
 
     Object.keys(state.absences)
         .sort()
         .forEach(date => {
-            state.absences[date].forEach(a => {
-                const nurse = state.nurses.find(
-                    n => n.id === a.nurseId
-                );
 
-                if (nurse) {
-                    entries.push({
-                        date,
-                        nurse,
-                        type: a.type
-                    });
-                }
-            });
+            state.absences[date]
+                .forEach(a => {
+
+                    const nurse =
+                        state.nurses.find(
+                            n => n.id === a.nurseId
+                        );
+
+                    if (nurse) {
+
+                        entries.push({
+                            date,
+                            nurse,
+                            type: a.type
+                        });
+
+                    }
+
+                });
+
         });
 
     if (!entries.length) {
+
         container.innerHTML = `
             <div class="small">
                 Zatím nejsou zadány žádné požadavky.
             </div>
         `;
+
         return;
     }
 
     container.innerHTML = `
+
         <table class="absence-table">
+
             <thead>
+
                 <tr>
                     <th>Datum</th>
                     <th>Sestra</th>
                     <th>Požadavek</th>
                     <th></th>
                 </tr>
+
             </thead>
+
             <tbody>
+
                 ${entries.map(entry => `
+
                     <tr>
-                        <td>${formatDate(entry.date)}</td>
-                        <td>${escapeHtml(entry.nurse.name)}</td>
-                        <td>${absenceText(entry.type)}</td>
+
                         <td>
+                            ${formatDate(entry.date)}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(entry.nurse.name)}
+                        </td>
+
+                        <td>
+                            ${absenceText(entry.type)}
+                        </td>
+
+                        <td>
+
                             <button
                                 class="btn-danger"
-                                onclick="removeAbsence('${entry.date}', '${entry.nurse.id}')">
+                                onclick="removeAbsence(
+                                    '${entry.date}',
+                                    '${entry.nurse.id}'
+                                )">
                                 Odstranit
                             </button>
+
                         </td>
+
                     </tr>
+
                 `).join("")}
+
             </tbody>
+
         </table>
+
     `;
 }
 
+
 /* =========================================================
-   SCHEDULE
+   PŘEDCHOZÍ MĚSÍC
+========================================================= */
+
+function getPreviousMonthData(data) {
+
+    let year = data.year;
+    let month = data.month - 1;
+
+    if (month < 0) {
+
+        month = 11;
+        year--;
+
+    }
+
+    const key =
+        `${year}-${String(month + 1).padStart(2,"0")}`;
+
+    const schedule =
+        state.schedules[key];
+
+    if (!schedule)
+        return null;
+
+    const lastDay =
+        new Date(year,month + 1,0).getDate();
+
+    const result = {};
+
+    state.nurses.forEach(nurse => {
+
+        result[nurse.id] = [];
+
+        for (
+            let d = Math.max(1,lastDay - 3);
+            d <= lastDay;
+            d++
+        ) {
+
+            const date =
+                dateKey(year,month,d);
+
+            result[nurse.id].push(
+                schedule[nurse.id]?.[date] || "O"
+            );
+
+        }
+
+    });
+
+    return result;
+}
+
+
+/* =========================================================
+   NOČNÍ ODPOČINEK
 ========================================================= */
 
 /*
-    schedule structure:
+    Pravidlo:
 
-    schedules["2026-09"] = {
-        nurseId: {
-            "2026-09-01": "D",
-            "2026-09-02": "N",
-            ...
-        }
-    }
+    Pokud má sestra:
+        N + N
 
-    D = day
-    N = night
-    NS = short night
-    O = off
+    potom musí mít minimálně:
+        následující den volno
+        + další půlden volno
+
+    V kalendářním plánování to znamená,
+    že po druhé noční nepřidělujeme další
+    směnu minimálně další 2 kalendářní dny.
+
+    Kontrolujeme také konec předchozího měsíce.
 */
 
-function getSchedule() {
-    const key = currentKey();
-
-    if (!state.schedules[key]) {
-        state.schedules[key] = {};
-    }
-
-    return state.schedules[key];
-}
-
-function generateSchedule() {
-    if (state.nurses.length < 5) {
-        showAlert(
-            "Pro plné pokrytí je potřeba alespoň 5 sester.",
-            "danger"
-        );
-        return;
-    }
-
-    const data = getMonthData();
-
-    /*
-        Vytvoříme prázdný rozpis.
-    */
-
-    const schedule = {};
-
-    state.nurses.forEach(nurse => {
-        schedule[nurse.id] = {};
-
-        for (let d = 1; d <= data.days; d++) {
-            schedule[nurse.id][dateKey(data.year, data.month, d)] = "O";
-        }
-    });
-
-    /*
-        Nejprve zjistíme požadované směny jednotlivých dnů.
-    */
-
-    const dayRequirements = [];
-
-    for (let d = 1; d <= data.days; d++) {
-        const wd = weekday(data.year, data.month, d);
-
-        if (wd === 6) {
-            // Sobota pouze denní
-            dayRequirements.push({
-                date: dateKey(data.year, data.month, d),
-                type: "D",
-                count: 3
-            });
-        } else if (wd === 0) {
-            // Neděle pouze noční
-            dayRequirements.push({
-                date: dateKey(data.year, data.month, d),
-                type: "N",
-                count: 2
-            });
-        } else {
-            // Běžný pracovní den:
-            // denní + noční
-            dayRequirements.push({
-                date: dateKey(data.year, data.month, d),
-                type: "D",
-                count: 3
-            });
-
-            dayRequirements.push({
-                date: dateKey(data.year, data.month, d),
-                type: "N",
-                count: 2
-            });
-        }
-    }
-
-    /*
-        Skóre sestry.
-        Čím nižší skóre, tím vhodnější kandidát.
-    */
-
-    const worked = {};
-    const hours = {};
-    const dayCount = {};
-    const nightCount = {};
-
-    state.nurses.forEach(nurse => {
-        worked[nurse.id] = 0;
-        hours[nurse.id] = 0;
-        dayCount[nurse.id] = 0;
-        nightCount[nurse.id] = 0;
-    });
-
-    /*
-        Předchozí měsíc.
-        Na začátku měsíce zohledníme poslední směny
-        z předchozího rozpisu.
-    */
-
-    const previousInfo = getPreviousMonthInfo(data);
-
-    /*
-        Rozdělujeme směny postupně.
-        Nejdříve směny s nejmenším počtem možných kandidátů.
-    */
-
-    for (const requirement of dayRequirements) {
-
-        const candidates = state.nurses
-            .filter(nurse =>
-                canWork(
-                    nurse,
-                    requirement.date,
-                    requirement.type,
-                    schedule,
-                    previousInfo
-                )
-            )
-            .sort((a, b) => {
-                const scoreA = candidateScore(
-                    a,
-                    requirement,
-                    worked,
-                    hours,
-                    dayCount,
-                    nightCount
-                );
-
-                const scoreB = candidateScore(
-                    b,
-                    requirement,
-                    worked,
-                    hours,
-                    dayCount,
-                    nightCount
-                );
-
-                return scoreA - scoreB;
-            });
-
-        let assigned = 0;
-
-        for (const nurse of candidates) {
-            if (assigned >= requirement.count) break;
-
-            if (!canWork(
-                nurse,
-                requirement.date,
-                requirement.type,
-                schedule,
-                previousInfo
-            )) {
-                continue;
-            }
-
-            schedule[nurse.id][requirement.date] =
-                requirement.type;
-
-            worked[nurse.id]++;
-
-            if (requirement.type === "D") {
-                dayCount[nurse.id]++;
-                hours[nurse.id] += shiftHours.day;
-            } else {
-                nightCount[nurse.id]++;
-
-                /*
-                    Standardní noční má 12 hodin.
-                    Krátkou noční lze ručně změnit na NS.
-                    Při automatickém generování používáme 12 h.
-                */
-                hours[nurse.id] += shiftHours.night;
-            }
-
-            assigned++;
-        }
-
-        if (assigned < requirement.count) {
-            /*
-                Pokusíme se rozpis dokončit pomocí relaxace
-                některých měkčích pravidel.
-            */
-
-            for (const nurse of state.nurses) {
-                if (assigned >= requirement.count) break;
-
-                if (schedule[nurse.id][requirement.date] !== "O") {
-                    continue;
-                }
-
-                if (hasHardAbsenceConflict(
-                    nurse,
-                    requirement.date,
-                    requirement.type
-                )) {
-                    continue;
-                }
-
-                if (wouldCreateThreeConsecutive(
-                    nurse,
-                    requirement.date,
-                    schedule,
-                    previousInfo
-                )) {
-                    continue;
-                }
-
-                schedule[nurse.id][requirement.date] =
-                    requirement.type;
-
-                worked[nurse.id]++;
-
-                if (requirement.type === "D") {
-                    dayCount[nurse.id]++;
-                    hours[nurse.id] += shiftHours.day;
-                } else {
-                    nightCount[nurse.id]++;
-                    hours[nurse.id] += shiftHours.night;
-                }
-
-                assigned++;
-            }
-        }
-    }
-
-    /*
-        Uložíme výsledek.
-    */
-
-    state.schedules[data.key] = schedule;
-
-    saveState();
-
-    renderSchedule();
-    renderStatistics();
-
-    showTab(
-        "schedule",
-        document.querySelectorAll(".tab")[1]
-    );
-
-    showAlert(
-        "Rozpis byl vygenerován. Zkontroluj případná upozornění.",
-        "success"
-    );
-}
-
-/* =========================================================
-   SCHEDULER LOGIC
-========================================================= */
-
-function candidateScore(
+function hasNightRecoveryConflict(
     nurse,
-    requirement,
-    worked,
-    hours,
-    dayCount,
-    nightCount
+    date,
+    schedule,
+    previousMonth
 ) {
-    const targetHours =
-        Number(document.getElementById("fund").value || 160)
-        * nurse.contract;
-
-    const hourDifference =
-        Math.abs(targetHours - hours[nurse.id]);
 
     /*
-        Preferujeme sestry, které jsou zatím pod fondem.
+        Kontrola:
+        dnešní směna je po dvou nočních?
     */
 
-    let score = hours[nurse.id];
+    const yesterday =
+        addDays(date,-1);
 
-    /*
-        Mírně vyvažujeme počet denních/nočních.
-    */
+    const twoDaysAgo =
+        addDays(date,-2);
 
-    if (requirement.type === "D") {
-        score += dayCount[nurse.id] * 1.5;
-    } else {
-        score += nightCount[nurse.id] * 1.5;
+    const shiftYesterday =
+        getShiftAcrossMonths(
+            nurse.id,
+            yesterday,
+            schedule,
+            previousMonth
+        );
+
+    const shiftTwoDaysAgo =
+        getShiftAcrossMonths(
+            nurse.id,
+            twoDaysAgo,
+            schedule,
+            previousMonth
+        );
+
+    if (
+        isNight(shiftYesterday) &&
+        isNight(shiftTwoDaysAgo)
+    ) {
+        return true;
     }
 
+
     /*
-        Pokud je sestra výrazně pod svým cílem,
-        dostane přednost.
+        Kontrola:
+        pokud bychom dnes přidali noční
+        a zítra už je plánovaná směna,
+        nesmí vzniknout porušení.
+
+        Zde řešíme především ruční úpravy.
     */
 
-    if (hours[nurse.id] < targetHours) {
-        score -= 25;
+    const todayShift =
+        schedule[nurse.id]?.[date];
+
+    if (
+        todayShift &&
+        isNight(todayShift)
+    ) {
+
+        const tomorrow =
+            addDays(date,1);
+
+        const afterTomorrow =
+            addDays(date,2);
+
+        const tomorrowShift =
+            getShiftAcrossMonths(
+                nurse.id,
+                tomorrow,
+                schedule,
+                null
+            );
+
+        const afterTomorrowShift =
+            getShiftAcrossMonths(
+                nurse.id,
+                afterTomorrow,
+                schedule,
+                null
+            );
+
+        /*
+            Po dvou nočních nesmí být
+            následující dva dny směna.
+        */
+
+        if (
+            isNight(shiftYesterday) &&
+            (
+                isWorking(tomorrowShift) ||
+                isWorking(afterTomorrowShift)
+            )
+        ) {
+            return true;
+        }
     }
 
-    /*
-        Velká odchylka nad fondem znamená penalizaci.
-    */
-
-    if (hours[nurse.id] > targetHours) {
-        score += hourDifference * 2;
-    }
-
-    /*
-        Náhodná malá složka zabrání tomu,
-        aby při každém generování vznikl identický rozpis.
-    */
-
-    score += Math.random() * 2;
-
-    return score;
+    return false;
 }
 
-function canWork(
-    nurse,
+
+function isNight(shift) {
+
+    return (
+        shift === "N" ||
+        shift === "NS"
+    );
+}
+
+
+/*
+    Obecnější kontrola:
+    pokud jsou poslední dvě směny N/N,
+    dnešní den musí být volno.
+*/
+
+function violatesTwoNightRule(
+    nurseId,
+    date,
+    schedule
+) {
+
+    const previousDate =
+        addDays(date,-1);
+
+    const twoPreviousDate =
+        addDays(date,-2);
+
+    const current =
+        getAnyShift(
+            nurseId,
+            date,
+            schedule
+        );
+
+    const previous =
+        getAnyShift(
+            nurseId,
+            previousDate,
+            schedule
+        );
+
+    const twoPrevious =
+        getAnyShift(
+            nurseId,
+            twoPreviousDate,
+            schedule
+        );
+
+    if (
+        isNight(previous) &&
+        isNight(twoPrevious) &&
+        isWorking(current)
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+
+/*
+    Kontrola všech tří dnů kolem nově
+    přidělované směny.
+*/
+
+function wouldViolateNightRecovery(
+    nurseId,
     date,
     shift,
     schedule,
-    previousInfo
+    previousMonth
 ) {
-    if (hasHardAbsenceConflict(nurse, date, shift)) {
-        return false;
-    }
 
-    if (wouldCreateThreeConsecutive(
-        nurse,
-        date,
-        schedule,
-        previousInfo
-    )) {
+    if (!isWorking(shift))
         return false;
+
+    /*
+        Nemůže pracovat, pokud předchozí
+        dva dny byly noční.
+    */
+
+    const d1 = addDays(date,-1);
+    const d2 = addDays(date,-2);
+
+    const s1 =
+        getShiftAcrossMonths(
+            nurseId,
+            d1,
+            schedule,
+            previousMonth
+        );
+
+    const s2 =
+        getShiftAcrossMonths(
+            nurseId,
+            d2,
+            schedule,
+            previousMonth
+        );
+
+    if (
+        isNight(s1) &&
+        isNight(s2)
+    ) {
+        return true;
     }
 
     /*
-        Na jeden den nemůže mít sestra dvě směny.
+        Pokud je nová směna druhá noční,
+        musí být další dva dny volné.
     */
 
-    if (schedule[nurse.id][date] &&
-        schedule[nurse.id][date] !== "O") {
-        return false;
-    }
+    if (isNight(shift) && isNight(s1)) {
 
-    /*
-        Ověření návaznosti mezi směnami.
-        Pokud má sestra předchozí den noční,
-        nemůže automaticky dostat denní následující den.
-    */
+        const dNext =
+            addDays(date,1);
 
-    if (previousInfo && previousInfo.lastShift[nurse.id]) {
+        const dNext2 =
+            addDays(date,2);
 
-        const previousShift =
-            previousInfo.lastShift[nurse.id];
+        const sNext =
+            getShiftAcrossMonths(
+                nurseId,
+                dNext,
+                schedule,
+                null
+            );
 
-        if (previousShift === "N" && shift === "D") {
-            return false;
+        const sNext2 =
+            getShiftAcrossMonths(
+                nurseId,
+                dNext2,
+                schedule,
+                null
+            );
+
+        if (
+            isWorking(sNext) ||
+            isWorking(sNext2)
+        ) {
+            return true;
         }
     }
 
-    return true;
+    /*
+        Pokud jsou další dva dny už známé
+        a nová směna by vytvořila N/N,
+        je to také problém.
+    */
+
+    const dNext =
+        addDays(date,1);
+
+    const dNext2 =
+        addDays(date,2);
+
+    const sNext =
+        getShiftAcrossMonths(
+            nurseId,
+            dNext,
+            schedule,
+            null
+        );
+
+    const sNext2 =
+        getShiftAcrossMonths(
+            nurseId,
+            dNext2,
+            schedule,
+            null
+        );
+
+    if (
+        isNight(shift) &&
+        isNight(sNext) &&
+        isWorking(sNext2)
+    ) {
+        return true;
+    }
+
+    return false;
 }
 
-function hasHardAbsenceConflict(nurse, date, shift) {
-    const absence = getAbsence(nurse.id, date);
 
-    if (!absence) return false;
+/* =========================================================
+   SHIFT ACROSS MONTHS
+========================================================= */
+
+function getAnyShift(
+    nurseId,
+    date,
+    schedule
+) {
+
+    const data =
+        getMonthData();
+
+    const target =
+        parseDate(date);
+
+    if (
+        target.getFullYear() === data.year &&
+        target.getMonth() === data.month
+    ) {
+        return (
+            schedule[nurseId]?.[date] || "O"
+        );
+    }
+
+    return getStoredShiftFromDate(
+        nurseId,
+        date
+    );
+}
+
+
+function getShiftAcrossMonths(
+    nurseId,
+    date,
+    currentSchedule,
+    previousMonth
+) {
+
+    const data =
+        getMonthData();
+
+    const target =
+        parseDate(date);
+
+    if (
+        target.getFullYear() === data.year &&
+        target.getMonth() === data.month
+    ) {
+        return (
+            currentSchedule[nurseId]?.[date] ||
+            "O"
+        );
+    }
+
+    const key =
+        `${target.getFullYear()}-${String(
+            target.getMonth()+1
+        ).padStart(2,"0")}`;
+
+    const saved =
+        state.schedules[key];
+
+    if (!saved)
+        return "O";
+
+    return (
+        saved[nurseId]?.[date] ||
+        "O"
+    );
+}
+
+
+function getStoredShiftFromDate(
+    nurseId,
+    date
+) {
+
+    const target =
+        parseDate(date);
+
+    const key =
+        `${target.getFullYear()}-${String(
+            target.getMonth()+1
+        ).padStart(2,"0")}`;
+
+    return (
+        state.schedules[key]?.[nurseId]?.[date] ||
+        "O"
+    );
+}
+
+
+/* =========================================================
+   3 SMĚNY ZA SEBOU
+========================================================= */
+
+function wouldCreateThreeConsecutive(
+    nurse,
+    date,
+    schedule,
+    previousMonth
+) {
+
+    const before1 =
+        addDays(date,-1);
+
+    const before2 =
+        addDays(date,-2);
+
+    const after1 =
+        addDays(date,1);
+
+    const shiftBefore1 =
+        getShiftAcrossMonths(
+            nurse.id,
+            before1,
+            schedule,
+            previousMonth
+        );
+
+    const shiftBefore2 =
+        getShiftAcrossMonths(
+            nurse.id,
+            before2,
+            schedule,
+            previousMonth
+        );
+
+    const shiftAfter1 =
+        getShiftAcrossMonths(
+            nurse.id,
+            after1,
+            schedule,
+            null
+        );
+
+    if (
+        isWorking(shiftBefore1) &&
+        isWorking(shiftBefore2)
+    ) {
+        return true;
+    }
+
+    if (
+        isWorking(shiftBefore1) &&
+        isWorking(shiftAfter1)
+    ) {
+
+        /*
+            Tady třetí směna vznikne pouze tehdy,
+            pokud je aktuálně posuzovaný den
+            pracovní.
+        */
+
+    }
+
+    return false;
+}
+
+
+/* =========================================================
+   TVRDÉ PODMÍNKY
+========================================================= */
+
+function hasHardAbsenceConflict(
+    nurse,
+    date,
+    shift
+) {
+
+    const absence =
+        getAbsence(
+            nurse.id,
+            date
+        );
+
+    if (!absence)
+        return false;
 
     if (
         absence.type === "vacation" ||
@@ -1473,7 +1925,7 @@ function hasHardAbsenceConflict(nurse, date, shift) {
 
     if (
         absence.type === "night" &&
-        shift !== "N"
+        !isNight(shift)
     ) {
         return true;
     }
@@ -1481,314 +1933,866 @@ function hasHardAbsenceConflict(nurse, date, shift) {
     return false;
 }
 
-function wouldCreateThreeConsecutive(
-    nurse,
-    date,
-    schedule,
-    previousInfo
-) {
-    const dates = surroundingDates(date);
-
-    let countBefore = 0;
-    let countAfter = 0;
-
-    /*
-        Předchozí den.
-    */
-
-    const beforeDate = dates.before;
-
-    if (beforeDate) {
-        if (
-            schedule[nurse.id] &&
-            schedule[nurse.id][beforeDate] &&
-            schedule[nurse.id][beforeDate] !== "O"
-        ) {
-            countBefore = 1;
-        }
-    } else if (
-        previousInfo &&
-        previousInfo.secondLastShift &&
-        previousInfo.secondLastShift[nurse.id] &&
-        previousInfo.lastShift &&
-        previousInfo.lastShift[nurse.id]
-    ) {
-        countBefore = 2;
-    }
-
-    /*
-        Den před tím.
-    */
-
-    const before2 = dates.before2;
-
-    if (
-        before2 &&
-        schedule[nurse.id] &&
-        schedule[nurse.id][before2] &&
-        schedule[nurse.id][before2] !== "O"
-    ) {
-        countBefore++;
-    }
-
-    /*
-        Následující den.
-    */
-
-    const afterDate = dates.after;
-
-    if (
-        afterDate &&
-        schedule[nurse.id] &&
-        schedule[nurse.id][afterDate] &&
-        schedule[nurse.id][afterDate] !== "O"
-    ) {
-        countAfter++;
-    }
-
-    return countBefore >= 2 || countAfter >= 2;
-}
-
-function surroundingDates(dateString) {
-    const date = new Date(dateString + "T12:00:00");
-
-    const before = new Date(date);
-    before.setDate(date.getDate() - 1);
-
-    const before2 = new Date(date);
-    before2.setDate(date.getDate() - 2);
-
-    const after = new Date(date);
-    after.setDate(date.getDate() + 1);
-
-    const monthData = getMonthData();
-
-    function insideMonth(d) {
-        return d.getMonth() === monthData.month &&
-               d.getFullYear() === monthData.year;
-    }
-
-    return {
-        before: insideMonth(before)
-            ? toDateKey(before)
-            : null,
-
-        before2: insideMonth(before2)
-            ? toDateKey(before2)
-            : null,
-
-        after: insideMonth(after)
-            ? toDateKey(after)
-            : null
-    };
-}
-
-function toDateKey(date) {
-    return `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-    ).padStart(2, "0")}-${String(
-        date.getDate()
-    ).padStart(2, "0")}`;
-}
 
 /* =========================================================
-   PREVIOUS MONTH
+   GENERÁTOR
 ========================================================= */
 
-function getPreviousMonthInfo(data) {
-    let year = data.year;
-    let month = data.month - 1;
+function generateSchedule() {
 
-    if (month < 0) {
-        month = 11;
-        year--;
+    if (state.nurses.length < 5) {
+
+        showAlert(
+            "Pro plné pokrytí je potřeba alespoň 5 sester.",
+            "danger"
+        );
+
+        return;
     }
 
-    const key =
-        `${year}-${String(month + 1).padStart(2, "0")}`;
+    const data =
+        getMonthData();
 
-    const schedule = state.schedules[key];
-
-    if (!schedule) {
-        return null;
-    }
-
-    const lastDay = daysInMonth(year, month);
-
-    const lastDate =
-        dateKey(year, month, lastDay);
-
-    const secondLastDate =
-        dateKey(year, month, Math.max(1, lastDay - 1));
-
-    const lastShift = {};
-    const secondLastShift = {};
+    const schedule = {};
 
     state.nurses.forEach(nurse => {
-        lastShift[nurse.id] =
-            schedule[nurse.id]?.[lastDate] || "O";
 
-        secondLastShift[nurse.id] =
-            schedule[nurse.id]?.[secondLastDate] || "O";
+        schedule[nurse.id] = {};
+
+        for (
+            let d = 1;
+            d <= data.days;
+            d++
+        ) {
+
+            schedule[nurse.id][
+                dateKey(
+                    data.year,
+                    data.month,
+                    d
+                )
+            ] = "O";
+
+        }
+
     });
 
-    return {
-        lastShift,
-        secondLastShift
-    };
+
+    const previousMonth =
+        getPreviousMonthData(data);
+
+
+    /*
+        Počítadla.
+    */
+
+    const stats = {};
+
+    state.nurses.forEach(nurse => {
+
+        stats[nurse.id] = {
+            shifts: 0,
+            hours: 0,
+            day: 0,
+            night: 0
+        };
+
+    });
+
+
+    /*
+        Vytvoření požadovaných směn.
+    */
+
+    const requirements = [];
+
+    for (
+        let d = 1;
+        d <= data.days;
+        d++
+    ) {
+
+        const date =
+            dateKey(
+                data.year,
+                data.month,
+                d
+            );
+
+        const wd =
+            weekday(
+                data.year,
+                data.month,
+                d
+            );
+
+        if (wd === 6) {
+
+            /*
+                Sobota – pouze denní.
+            */
+
+            requirements.push({
+                date,
+                type: "D",
+                count: 3
+            });
+
+        } else if (wd === 0) {
+
+            /*
+                Neděle – pouze noční.
+            */
+
+            requirements.push({
+                date,
+                type: "N",
+                count: 2
+            });
+
+        } else {
+
+            requirements.push({
+                date,
+                type: "D",
+                count: 3
+            });
+
+            requirements.push({
+                date,
+                type: "N",
+                count: 2
+            });
+
+        }
+
+    }
+
+
+    /*
+        Nejdříve řešíme směny,
+        kde je nejméně vhodných sester.
+    */
+
+    requirements.sort((a,b) => {
+
+        const ca =
+            getCandidateCount(
+                a,
+                schedule,
+                previousMonth
+            );
+
+        const cb =
+            getCandidateCount(
+                b,
+                schedule,
+                previousMonth
+            );
+
+        return ca - cb;
+
+    });
+
+
+    /*
+        Přidělení směn.
+    */
+
+    for (const requirement of requirements) {
+
+        let assigned = 0;
+
+        const candidates =
+            state.nurses
+                .filter(nurse =>
+                    canAssignShift(
+                        nurse,
+                        requirement.date,
+                        requirement.type,
+                        schedule,
+                        previousMonth
+                    )
+                )
+                .sort((a,b) => {
+
+                    return candidateScore(
+                        a,
+                        b,
+                        requirement,
+                        stats
+                    );
+
+                });
+
+
+        for (const nurse of candidates) {
+
+            if (
+                assigned >=
+                requirement.count
+            ) {
+                break;
+            }
+
+            if (!canAssignShift(
+                nurse,
+                requirement.date,
+                requirement.type,
+                schedule,
+                previousMonth
+            )) {
+                continue;
+            }
+
+            assignShift(
+                nurse,
+                requirement.date,
+                requirement.type,
+                schedule,
+                stats
+            );
+
+            assigned++;
+
+        }
+
+
+        /*
+            Pokud není dost kandidátů,
+            pokusíme se alespoň najít sestry,
+            které splní tvrdé podmínky.
+        */
+
+        if (
+            assigned <
+            requirement.count
+        ) {
+
+            const fallback =
+                state.nurses
+                    .filter(nurse =>
+                        fallbackCanAssign(
+                            nurse,
+                            requirement.date,
+                            requirement.type,
+                            schedule
+                        )
+                    )
+                    .sort((a,b) =>
+                        stats[a.id].hours -
+                        stats[b.id].hours
+                    );
+
+            for (const nurse of fallback) {
+
+                if (
+                    assigned >=
+                    requirement.count
+                ) {
+                    break;
+                }
+
+                assignShift(
+                    nurse,
+                    requirement.date,
+                    requirement.type,
+                    schedule,
+                    stats
+                );
+
+                assigned++;
+
+            }
+
+        }
+
+    }
+
+
+    state.schedules[data.key] =
+        schedule;
+
+    saveState();
+
+    renderAll();
+
+    showTab(
+        "schedule",
+        document.querySelectorAll(".tab")[1]
+    );
+
+    showAlert(
+        "Rozpis byl vygenerován. Zkontroluj případná upozornění.",
+        "success"
+    );
 }
 
+
 /* =========================================================
-   RENDER SCHEDULE
+   KANDIDÁTI
 ========================================================= */
 
-function renderSchedule() {
-    const data = getMonthData();
-    const schedule = state.schedules[data.key] || {};
+function getCandidateCount(
+    requirement,
+    schedule,
+    previousMonth
+) {
 
-    document.getElementById("scheduleTitle").textContent =
+    return state.nurses.filter(
+        nurse =>
+            canAssignShift(
+                nurse,
+                requirement.date,
+                requirement.type,
+                schedule,
+                previousMonth
+            )
+    ).length;
+}
+
+
+function canAssignShift(
+    nurse,
+    date,
+    shift,
+    schedule,
+    previousMonth
+) {
+
+    /*
+        Absence.
+    */
+
+    if (
+        hasHardAbsenceConflict(
+            nurse,
+            date,
+            shift
+        )
+    ) {
+        return false;
+    }
+
+
+    /*
+        Sestra už má v tento den směnu.
+    */
+
+    if (
+        schedule[nurse.id]?.[date] &&
+        schedule[nurse.id][date] !== "O"
+    ) {
+        return false;
+    }
+
+
+    /*
+        3 směny za sebou.
+    */
+
+    if (
+        wouldCreateThreeConsecutive(
+            nurse,
+            date,
+            schedule,
+            previousMonth
+        )
+    ) {
+        return false;
+    }
+
+
+    /*
+        Pravidlo po dvou nočních.
+    */
+
+    if (
+        wouldViolateNightRecovery(
+            nurse.id,
+            date,
+            shift,
+            schedule,
+            previousMonth
+        )
+    ) {
+        return false;
+    }
+
+
+    /*
+        Po noční není vhodná okamžitá
+        denní následující den.
+    */
+
+    const yesterday =
+        addDays(date,-1);
+
+    const previousShift =
+        getShiftAcrossMonths(
+            nurse.id,
+            yesterday,
+            schedule,
+            previousMonth
+        );
+
+    if (
+        isNight(previousShift) &&
+        shift === "D"
+    ) {
+        return false;
+    }
+
+
+    return true;
+}
+
+
+function fallbackCanAssign(
+    nurse,
+    date,
+    shift,
+    schedule
+) {
+
+    if (
+        hasHardAbsenceConflict(
+            nurse,
+            date,
+            shift
+        )
+    ) {
+        return false;
+    }
+
+    if (
+        schedule[nurse.id]?.[date] &&
+        schedule[nurse.id][date] !== "O"
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
+
+/* =========================================================
+   SCORE
+========================================================= */
+
+function candidateScore(
+    a,
+    b,
+    requirement,
+    stats
+) {
+
+    const sa =
+        stats[a.id];
+
+    const sb =
+        stats[b.id];
+
+    /*
+        Nejdříve preferujeme sestru,
+        která má méně hodin vůči úvazku.
+    */
+
+    const fund =
+        Number(
+            document.getElementById("fund").value
+        ) || 160;
+
+    const targetA =
+        fund * a.contract;
+
+    const targetB =
+        fund * b.contract;
+
+    const ratioA =
+        sa.hours / targetA;
+
+    const ratioB =
+        sb.hours / targetB;
+
+
+    if (ratioA !== ratioB)
+        return ratioA - ratioB;
+
+
+    /*
+        Potom vyvažujeme denní/noční.
+    */
+
+    if (
+        requirement.type === "D" &&
+        sa.day !== sb.day
+    ) {
+        return sa.day - sb.day;
+    }
+
+    if (
+        requirement.type === "N" &&
+        sa.night !== sb.night
+    ) {
+        return sa.night - sb.night;
+    }
+
+
+    return sa.shifts - sb.shifts;
+}
+
+
+/* =========================================================
+   PŘIDĚLENÍ
+========================================================= */
+
+function assignShift(
+    nurse,
+    date,
+    shift,
+    schedule,
+    stats
+) {
+
+    schedule[nurse.id][date] =
+        shift;
+
+    stats[nurse.id].shifts++;
+
+    stats[nurse.id].hours +=
+        shiftHours[shift];
+
+    if (shift === "D")
+        stats[nurse.id].day++;
+
+    if (
+        shift === "N" ||
+        shift === "NS"
+    ) {
+        stats[nurse.id].night++;
+    }
+}
+
+
+/* =========================================================
+   ROZPIS
+========================================================= */
+
+function getSchedule() {
+
+    const key =
+        currentKey();
+
+    if (!state.schedules[key])
+        state.schedules[key] = {};
+
+    return state.schedules[key];
+}
+
+
+function renderSchedule() {
+
+    const data =
+        getMonthData();
+
+    const schedule =
+        state.schedules[data.key] || {};
+
+    document.getElementById(
+        "scheduleTitle"
+    ).textContent =
         `Rozpis směn – ${monthNames[data.month]} ${data.year}`;
 
-    const table = document.getElementById("scheduleTable");
+
+    const table =
+        document.getElementById(
+            "scheduleTable"
+        );
+
+
+    /*
+        Nejprve spočítáme směny každé sestry.
+    */
+
+    const shiftCounts = {};
+
+    state.nurses.forEach(nurse => {
+
+        shiftCounts[nurse.id] = 0;
+
+        for (
+            let d = 1;
+            d <= data.days;
+            d++
+        ) {
+
+            const date =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d
+                );
+
+            const shift =
+                schedule[nurse.id]?.[date];
+
+            if (isWorking(shift))
+                shiftCounts[nurse.id]++;
+
+        }
+
+    });
+
 
     let html = `
         <thead>
+
             <tr>
-                <th>Sestra</th>
+
+                <th>
+                    Sestra / počet směn
+                </th>
     `;
 
-    for (let d = 1; d <= data.days; d++) {
-        const wd = weekday(data.year, data.month, d);
+
+    for (
+        let d = 1;
+        d <= data.days;
+        d++
+    ) {
+
+        const wd =
+            weekday(
+                data.year,
+                data.month,
+                d
+            );
 
         html += `
-            <th class="${wd === 0 || wd === 6 ? "weekend" : ""}">
+            <th class="${
+                wd === 0 || wd === 6
+                    ? "weekend"
+                    : ""
+            }">
+
                 ${d}.<br>
-                <span class="small">${weekdayName(wd)}</span>
+
+                <span class="small">
+                    ${weekdayName(wd)}
+                </span>
+
             </th>
         `;
+
     }
+
 
     html += `
             </tr>
         </thead>
+
         <tbody>
     `;
+
 
     state.nurses.forEach(nurse => {
 
         html += `
             <tr>
+
                 <td>
-                    <strong>${escapeHtml(nurse.name)}</strong><br>
-                    <span class="small">
-                        úv. ${formatContract(nurse.contract)}
-                    </span>
+
+                    <strong>
+                        ${escapeHtml(nurse.name)}
+                    </strong>
+
+                    <div class="nurse-summary">
+
+                        <strong>
+                            ${shiftCounts[nurse.id]} směn
+                        </strong>
+
+                        · úvazek
+                        ${formatContract(nurse.contract)}
+
+                    </div>
+
                 </td>
         `;
 
-        for (let d = 1; d <= data.days; d++) {
+
+        for (
+            let d = 1;
+            d <= data.days;
+            d++
+        ) {
 
             const date =
-                dateKey(data.year, data.month, d);
+                dateKey(
+                    data.year,
+                    data.month,
+                    d
+                );
 
             const shift =
-                schedule[nurse.id]?.[date] || "O";
+                schedule[nurse.id]?.[date]
+                || "O";
 
             const absence =
-                getAbsence(nurse.id, date);
+                getAbsence(
+                    nurse.id,
+                    date
+                );
 
-            let cellClass = "off-cell";
+
+            let cellClass =
+                "off-cell";
+
             let text = "—";
 
-            if (absence &&
-                (absence.type === "vacation" ||
-                 absence.type === "unavailable")) {
 
-                cellClass = "vacation-cell";
-                text = absence.type === "vacation"
-                    ? "DOV"
-                    : "N";
+            if (
+                absence &&
+                (
+                    absence.type === "vacation" ||
+                    absence.type === "unavailable"
+                )
+            ) {
 
-            } else if (shift === "D") {
+                cellClass =
+                    "vacation-cell";
 
-                cellClass = "day-cell";
+                text =
+                    absence.type === "vacation"
+                        ? "DOV"
+                        : "NEM";
+
+            } else if (
+                shift === "D"
+            ) {
+
+                cellClass =
+                    "day-cell";
+
                 text = "D";
 
-            } else if (shift === "N") {
+            } else if (
+                shift === "N"
+            ) {
 
-                cellClass = "night-cell";
+                cellClass =
+                    "night-cell";
+
                 text = "N";
 
-            } else if (shift === "NS") {
+            } else if (
+                shift === "NS"
+            ) {
 
-                cellClass = "night-cell";
+                cellClass =
+                    "night-cell";
+
                 text = "N½";
             }
 
+
             html += `
                 <td>
+
                     <div
                         class="shift-cell ${cellClass}"
-                        onclick="cycleShift('${nurse.id}', '${date}')"
+                        onclick="cycleShift(
+                            '${nurse.id}',
+                            '${date}'
+                        )"
                         title="Klikni pro změnu směny">
+
                         ${text}
+
                     </div>
+
                 </td>
             `;
+
         }
 
-        html += `</tr>`;
+
+        html += `
+            </tr>
+        `;
+
     });
+
 
     html += `
         </tbody>
     `;
 
-    table.innerHTML = html;
+
+    table.innerHTML =
+        html;
 
     renderScheduleWarnings();
 }
 
+
 /* =========================================================
-   MANUAL EDITING
+   RUČNÍ ZMĚNA
 ========================================================= */
 
-function cycleShift(nurseId, date) {
+function cycleShift(
+    nurseId,
+    date
+) {
 
-    const schedule = getSchedule();
+    const schedule =
+        getSchedule();
 
-    if (!schedule[nurseId]) {
+    if (!schedule[nurseId])
         schedule[nurseId] = {};
-    }
+
 
     const current =
-        schedule[nurseId][date] || "O";
+        schedule[nurseId][date]
+        || "O";
 
-    const options = ["O", "D", "N", "NS"];
 
-    let index = options.indexOf(current);
+    const options =
+        ["O","D","N","NS"];
 
-    index = (index + 1) % options.length;
 
-    const next = options[index];
+    const next =
+        options[
+            (
+                options.indexOf(current) + 1
+            ) % options.length
+        ];
 
-    /*
-        Respektujeme dovolenou.
-    */
 
-    const absence = getAbsence(nurseId, date);
+    const absence =
+        getAbsence(
+            nurseId,
+            date
+        );
+
 
     if (
         absence &&
-        (absence.type === "vacation" ||
-         absence.type === "unavailable")
+        (
+            absence.type === "vacation" ||
+            absence.type === "unavailable"
+        )
     ) {
+
         showAlert(
-            "Tento den má sestra zadanou dovolenou nebo nedostupnost.",
+            "Tento den má sestra dovolenou nebo nedostupnost.",
             "warning"
         );
+
         return;
     }
+
 
     if (
         absence &&
@@ -1796,302 +2800,603 @@ function cycleShift(nurseId, date) {
         next !== "D" &&
         next !== "O"
     ) {
+
         showAlert(
             "Na tento den je nastaven požadavek pouze denní.",
             "warning"
         );
+
         return;
     }
+
 
     if (
         absence &&
         absence.type === "night" &&
-        next !== "N" &&
-        next !== "NS" &&
+        !isNight(next) &&
         next !== "O"
     ) {
+
         showAlert(
             "Na tento den je nastaven požadavek pouze noční.",
             "warning"
         );
+
         return;
     }
 
-    schedule[nurseId][date] = next;
 
-    state.schedules[currentKey()] = schedule;
+    /*
+        Ruční změna je povolena,
+        ale okamžitě přepočítáme upozornění.
+    */
+
+    schedule[nurseId][date] =
+        next;
+
+    state.schedules[currentKey()] =
+        schedule;
 
     saveState();
-    renderSchedule();
-    renderStatistics();
+
+    renderAll();
 }
 
+
 /* =========================================================
-   WARNINGS
+   KONTROLA ROZPISU
 ========================================================= */
 
 function renderScheduleWarnings() {
-    const data = getMonthData();
-    const schedule = state.schedules[data.key] || {};
+
+    const data =
+        getMonthData();
+
+    const schedule =
+        state.schedules[data.key] || {};
 
     const warnings = [];
 
+
     /*
-        Kontrola obsazení.
+        Obsazení.
     */
 
-    for (let d = 1; d <= data.days; d++) {
+    for (
+        let d = 1;
+        d <= data.days;
+        d++
+    ) {
 
         const date =
-            dateKey(data.year, data.month, d);
+            dateKey(
+                data.year,
+                data.month,
+                d
+            );
 
         const wd =
-            weekday(data.year, data.month, d);
+            weekday(
+                data.year,
+                data.month,
+                d
+            );
 
         let requiredDay = 0;
         let requiredNight = 0;
 
+
         if (wd === 6) {
+
             requiredDay = 3;
+
         } else if (wd === 0) {
+
             requiredNight = 2;
+
         } else {
+
             requiredDay = 3;
             requiredNight = 2;
+
         }
+
 
         let dayCount = 0;
         let nightCount = 0;
 
+
         state.nurses.forEach(nurse => {
+
             const shift =
                 schedule[nurse.id]?.[date];
 
-            if (shift === "D") dayCount++;
-            if (shift === "N" || shift === "NS") nightCount++;
+            if (shift === "D")
+                dayCount++;
+
+            if (isNight(shift))
+                nightCount++;
+
         });
 
-        if (dayCount < requiredDay) {
+
+        if (
+            dayCount <
+            requiredDay
+        ) {
+
             warnings.push(
-                `${formatDate(date)} – denní má pouze ${dayCount}/${requiredDay} sester.`
+                `${formatDate(date)} – denní má ${dayCount}/${requiredDay} sester.`
             );
+
         }
 
-        if (nightCount < requiredNight) {
+
+        if (
+            nightCount <
+            requiredNight
+        ) {
+
             warnings.push(
-                `${formatDate(date)} – noční má pouze ${nightCount}/${requiredNight} sester.`
+                `${formatDate(date)} – noční má ${nightCount}/${requiredNight} sester.`
             );
+
         }
+
     }
 
+
     /*
-        Kontrola 3 směn za sebou.
+        3 směny za sebou.
     */
 
     state.nurses.forEach(nurse => {
 
-        const dates = [];
+        for (
+            let d = 1;
+            d <= data.days - 2;
+            d++
+        ) {
 
-        for (let d = 1; d <= data.days; d++) {
-            dates.push(
-                dateKey(data.year, data.month, d)
-            );
-        }
+            const d1 =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d
+                );
 
-        for (let i = 0; i < dates.length - 2; i++) {
+            const d2 =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d + 1
+                );
 
-            const a = schedule[nurse.id]?.[dates[i]];
-            const b = schedule[nurse.id]?.[dates[i + 1]];
-            const c = schedule[nurse.id]?.[dates[i + 2]];
+            const d3 =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d + 2
+                );
+
+            const a =
+                schedule[nurse.id]?.[d1];
+
+            const b =
+                schedule[nurse.id]?.[d2];
+
+            const c =
+                schedule[nurse.id]?.[d3];
+
 
             if (
                 isWorking(a) &&
                 isWorking(b) &&
                 isWorking(c)
             ) {
+
                 warnings.push(
-                    `${nurse.name} má 3 směny za sebou (${formatDate(dates[i])}–${formatDate(dates[i + 2])}).`
+                    `${nurse.name} má 3 směny za sebou (${formatDate(d1)}–${formatDate(d3)}).`
                 );
+
             }
+
         }
+
     });
 
+
+    /*
+        Dvě noční + nedostatečné volno.
+    */
+
+    state.nurses.forEach(nurse => {
+
+        for (
+            let d = 1;
+            d <= data.days - 2;
+            d++
+        ) {
+
+            const d1 =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d
+                );
+
+            const d2 =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d + 1
+                );
+
+            const d3 =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d + 2
+                );
+
+            const d4 =
+                dateKey(
+                    data.year,
+                    data.month,
+                    d + 3
+                );
+
+
+            const s1 =
+                schedule[nurse.id]?.[d1];
+
+            const s2 =
+                schedule[nurse.id]?.[d2];
+
+            const s3 =
+                schedule[nurse.id]?.[d3];
+
+            const s4 =
+                schedule[nurse.id]?.[d4];
+
+
+            if (
+                isNight(s1) &&
+                isNight(s2) &&
+                (
+                    isWorking(s3) ||
+                    isWorking(s4)
+                )
+            ) {
+
+                warnings.push(
+                    `${nurse.name}: po dvou nočních (${formatDate(d1)} a ${formatDate(d2)}) nemá dostatečné volno.`
+                );
+
+            }
+
+        }
+
+    });
+
+
+    /*
+        Kontrola posledních dvou nočních
+        před začátkem tohoto měsíce.
+    */
+
+    const previous =
+        getPreviousMonthData(data);
+
+
+    if (previous) {
+
+        state.nurses.forEach(nurse => {
+
+            const previousShifts =
+                previous[nurse.id] || [];
+
+            const last2 =
+                previousShifts.slice(-2);
+
+            if (
+                last2.length === 2 &&
+                isNight(last2[0]) &&
+                isNight(last2[1])
+            ) {
+
+                const firstDate =
+                    dateKey(
+                        data.year,
+                        data.month,
+                        1
+                    );
+
+                const secondDate =
+                    dateKey(
+                        data.year,
+                        data.month,
+                        2
+                    );
+
+
+                const firstShift =
+                    schedule[nurse.id]?.[firstDate];
+
+                const secondShift =
+                    schedule[nurse.id]?.[secondDate];
+
+
+                if (
+                    isWorking(firstShift) ||
+                    isWorking(secondShift)
+                ) {
+
+                    warnings.push(
+                        `${nurse.name}: na konci předchozího měsíce měla 2 noční za sebou, proto musí mít začátek tohoto měsíce volný.`
+                    );
+
+                }
+
+            }
+
+        });
+
+    }
+
+
     const container =
-        document.getElementById("scheduleWarnings");
+        document.getElementById(
+            "scheduleWarnings"
+        );
+
 
     if (!warnings.length) {
+
         container.innerHTML = `
             <div class="alert alert-success">
-                ✓ Rozpis aktuálně splňuje kontrolovaná pravidla.
+                ✓ Rozpis splňuje kontrolovaná pravidla.
             </div>
         `;
+
         return;
     }
 
+
     container.innerHTML = `
         <div class="alert alert-warning">
+
             <strong>Upozornění:</strong>
+
             <ul style="margin-bottom:0">
-                ${warnings.map(w => `<li>${escapeHtml(w)}</li>`).join("")}
+
+                ${warnings.map(w => `
+                    <li>
+                        ${escapeHtml(w)}
+                    </li>
+                `).join("")}
+
             </ul>
+
         </div>
     `;
 }
 
-function isWorking(shift) {
-    return shift === "D" ||
-           shift === "N" ||
-           shift === "NS";
-}
 
 /* =========================================================
-   STATISTICS
+   STATISTIKY
 ========================================================= */
 
 function renderStatistics() {
-    const data = getMonthData();
-    const schedule = state.schedules[data.key] || {};
+
+    const data =
+        getMonthData();
+
+    const schedule =
+        state.schedules[data.key] || {};
 
     const fund =
-        Number(document.getElementById("fund").value || 160);
+        Number(
+            document.getElementById("fund").value
+        ) || 160;
 
-    const container =
-        document.getElementById("statisticsContent");
 
-    if (!state.nurses.length) {
-        container.innerHTML = `
-            <div class="small">
-                Nejprve přidej sestry.
-            </div>
-        `;
-        return;
-    }
+    const rows =
+        state.nurses.map(nurse => {
 
-    const rows = state.nurses.map(nurse => {
+            let hours = 0;
+            let day = 0;
+            let night = 0;
+            let shifts = 0;
 
-        let hours = 0;
-        let day = 0;
-        let night = 0;
 
-        for (let d = 1; d <= data.days; d++) {
+            for (
+                let d = 1;
+                d <= data.days;
+                d++
+            ) {
 
-            const date =
-                dateKey(data.year, data.month, d);
+                const date =
+                    dateKey(
+                        data.year,
+                        data.month,
+                        d
+                    );
 
-            const shift =
-                schedule[nurse.id]?.[date];
+                const shift =
+                    schedule[nurse.id]?.[date];
 
-            if (shift === "D") {
-                day++;
-                hours += shiftHours.day;
+
+                if (shift === "D") {
+
+                    day++;
+                    shifts++;
+                    hours += 12;
+
+                }
+
+
+                if (shift === "N") {
+
+                    night++;
+                    shifts++;
+                    hours += 12;
+
+                }
+
+
+                if (shift === "NS") {
+
+                    night++;
+                    shifts++;
+                    hours += 6;
+
+                }
+
             }
 
-            if (shift === "N") {
-                night++;
-                hours += shiftHours.night;
-            }
 
-            if (shift === "NS") {
-                night++;
-                hours += shiftHours.nightShort;
-            }
-        }
+            const target =
+                fund * nurse.contract;
 
-        const target =
-            fund * nurse.contract;
+            const difference =
+                hours - target;
 
-        const difference =
-            hours - target;
 
-        const percentage =
-            target > 0
-                ? Math.min(100, Math.round(hours / target * 100))
-                : 0;
+            return {
+                nurse,
+                shifts,
+                hours,
+                day,
+                night,
+                target,
+                difference
+            };
 
-        return {
-            nurse,
-            hours,
-            day,
-            night,
-            target,
-            difference,
-            percentage
-        };
-    });
+        });
+
 
     const totalHours =
-        rows.reduce((sum, row) => sum + row.hours, 0);
+        rows.reduce(
+            (sum,row) =>
+                sum + row.hours,
+            0
+        );
+
 
     const totalTarget =
-        rows.reduce((sum, row) => sum + row.target, 0);
+        rows.reduce(
+            (sum,row) =>
+                sum + row.target,
+            0
+        );
+
+
+    const container =
+        document.getElementById(
+            "statisticsContent"
+        );
+
 
     container.innerHTML = `
+
         <div class="stats">
-            <div class="stat">
-                <div class="stat-label">Sestry</div>
-                <div class="stat-value">${state.nurses.length}</div>
-            </div>
 
             <div class="stat">
-                <div class="stat-label">Celkem hodin</div>
-                <div class="stat-value">${totalHours} h</div>
-            </div>
+                <div class="stat-label">
+                    Sestry
+                </div>
 
-            <div class="stat">
-                <div class="stat-label">Plánovaný fond</div>
-                <div class="stat-value">${Math.round(totalTarget)} h</div>
-            </div>
-
-            <div class="stat">
-                <div class="stat-label">Rozdíl</div>
                 <div class="stat-value">
-                    ${Math.round(totalHours - totalTarget)} h
+                    ${state.nurses.length}
                 </div>
             </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Celkem směn
+                </div>
+
+                <div class="stat-value">
+                    ${rows.reduce(
+                        (s,r) => s + r.shifts,
+                        0
+                    )}
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Celkem hodin
+                </div>
+
+                <div class="stat-value">
+                    ${totalHours} h
+                </div>
+            </div>
+
+
+            <div class="stat">
+                <div class="stat-label">
+                    Plánovaný fond
+                </div>
+
+                <div class="stat-value">
+                    ${Math.round(totalTarget)} h
+                </div>
+            </div>
+
         </div>
 
+
         <div class="schedule-wrapper">
+
             <table class="absence-table">
+
                 <thead>
+
                     <tr>
+
                         <th>Sestra</th>
                         <th>Úvazek</th>
+                        <th>Směny</th>
+                        <th>Denní</th>
+                        <th>Noční</th>
                         <th>Cíl hodin</th>
                         <th>Skutečnost</th>
                         <th>Rozdíl</th>
-                        <th>Denní</th>
-                        <th>Noční</th>
+
                     </tr>
+
                 </thead>
 
+
                 <tbody>
+
                     ${rows.map(row => `
+
                         <tr>
+
                             <td>
                                 <strong>
-                                    ${escapeHtml(row.nurse.name)}
+                                    ${escapeHtml(
+                                        row.nurse.name
+                                    )}
                                 </strong>
-
-                                <div class="progress">
-                                    <div style="width:${row.percentage}%"></div>
-                                </div>
                             </td>
 
                             <td>
-                                ${formatContract(row.nurse.contract)}
+                                ${formatContract(
+                                    row.nurse.contract
+                                )}
                             </td>
 
                             <td>
-                                ${Math.round(row.target)} h
-                            </td>
-
-                            <td>
-                                ${row.hours} h
-                            </td>
-
-                            <td>
-                                ${row.difference > 0 ? "+" : ""}
-                                ${Math.round(row.difference)} h
+                                <strong>
+                                    ${row.shifts}
+                                </strong>
                             </td>
 
                             <td>
@@ -2101,33 +3406,68 @@ function renderStatistics() {
                             <td>
                                 ${row.night}
                             </td>
+
+                            <td>
+                                ${Math.round(
+                                    row.target
+                                )} h
+                            </td>
+
+                            <td>
+                                ${row.hours} h
+                            </td>
+
+                            <td>
+                                ${
+                                    row.difference > 0
+                                        ? "+"
+                                        : ""
+                                }${Math.round(
+                                    row.difference
+                                )} h
+                            </td>
+
                         </tr>
+
                     `).join("")}
+
                 </tbody>
+
             </table>
+
         </div>
     `;
 }
+
 
 /* =========================================================
    TABS
 ========================================================= */
 
-function showTab(id, button) {
+function showTab(id,button) {
 
-    document.querySelectorAll(".tab-content")
-        .forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(
+        ".tab-content"
+    ).forEach(el =>
+        el.classList.remove("active")
+    );
 
-    document.querySelectorAll(".tab")
-        .forEach(el => el.classList.remove("active"));
+
+    document.querySelectorAll(
+        ".tab"
+    ).forEach(el =>
+        el.classList.remove("active")
+    );
+
 
     document.getElementById(id)
         .classList.add("active");
 
-    if (button) {
+
+    if (button)
         button.classList.add("active");
-    }
 }
+
 
 /* =========================================================
    CLEAR
@@ -2141,77 +3481,81 @@ function clearSchedule() {
         return;
     }
 
-    delete state.schedules[currentKey()];
+    delete state.schedules[
+        currentKey()
+    ];
 
     saveState();
+
     renderAll();
 }
 
+
 /* =========================================================
-   RENDER ALL
+   RENDER
 ========================================================= */
 
 function renderAll() {
+
     renderNurses();
     renderNurseSelect();
     renderAbsences();
     renderSchedule();
     renderStatistics();
 
-    /*
-        Nastavíme datum absencí na aktuální měsíc.
-    */
 
-    const data = getMonthData();
-
-    const defaultDate =
-        dateKey(data.year, data.month, 1);
+    const data =
+        getMonthData();
 
     const dateInput =
-        document.getElementById("absenceDate");
+        document.getElementById(
+            "absenceDate"
+        );
+
 
     if (!dateInput.value) {
-        dateInput.value = defaultDate;
+
+        dateInput.value =
+            dateKey(
+                data.year,
+                data.month,
+                1
+            );
+
     }
+
 }
 
+
 /* =========================================================
-   MONTH / YEAR CHANGES
+   EVENT LISTENERS
 ========================================================= */
 
 document.getElementById("month")
-    .addEventListener("change", () => {
-        renderAll();
-    });
+    .addEventListener(
+        "change",
+        renderAll
+    );
+
 
 document.getElementById("year")
-    .addEventListener("change", () => {
-        renderAll();
-    });
+    .addEventListener(
+        "change",
+        renderAll
+    );
+
 
 document.getElementById("fund")
-    .addEventListener("change", () => {
-        saveState();
-        renderStatistics();
-    });
+    .addEventListener(
+        "change",
+        () => {
 
-/* =========================================================
-   UTILITIES
-========================================================= */
+            saveState();
+            renderStatistics();
 
-function formatDate(dateString) {
-    const parts = dateString.split("-");
-    return `${parts[2]}.${parts[1]}.${parts[0]}`;
-}
+        }
+    );
 
-function escapeHtml(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
 
 /* =========================================================
    START
