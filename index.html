@@ -53,12 +53,13 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 <div class="form">
 <div class="row"><label>Začátek denní<input id="dayStart" type="time"></label><label>Konec denní<input id="dayEnd" type="time"></label></div>
 <div class="row"><label>Začátek noční<input id="nightStart" type="time"></label><label>Konec noční<input id="nightEnd" type="time"></label></div>
+<label class="toggle"><input id="nightUntilMidnight" type="checkbox"> 🌙 Noční směna pouze do půlnoci</label>
+<div class="help">Je-li zaškrtnuto, noční směna končí ve 00:00 bez ohledu na zadaný konec noční směny.</div>
 <div class="row">
 <label>Sestry na denní<input id="minD" type="number" min="1" value="3"></label>
 <label>Sestry na noční<input id="minN" type="number" min="1" value="2"></label>
 </div>
 <div class="help">Pro váš režim je nastaveno přesně 3× denní + 2× noční. V sobotu pouze 3× denní, v neděli pouze 2× noční.</div>
-<label><span class="toggle"><input id="nightUntilMidnight" type="checkbox"> 🌙 Noční směna pouze do půlnoci</span></label>
 <div class="help">Víkendy: v sobotu se plánují pouze denní směny, v neděli pouze noční směny. Systém se snaží, aby sobotní dvojice pokračovala v neděli na noční.</div>
 <div class="row"><label>Hodin týdně pro plný úvazek<input id="weeklyHours" type="number" min="1" step="0.5"></label><label>Max. směn za sebou<input id="maxConsecutive" type="number" min="1"></label></div>
 <div class="row"><label>Min. odpočinek (hod.)<input id="restHours" type="number" min="1"></label><div class="help" id="monthlyFundInfo"></div></div>
@@ -70,7 +71,7 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 <div class="modal" id="modal"><div class="modalbox"><h2 id="modalTitle"></h2><div id="modalContent"></div><div style="margin-top:14px;text-align:right"><button class="plain" onclick="closeModal()">Zavřít</button></div></div></div>
 
 <script>
-const KEY='plan_smen_v2';
+const KEY='plan_smen_v6';
 const months=['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
 const weekdays=['Ne','Po','Út','St','Čt','Pá','So'];
 let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
@@ -87,7 +88,7 @@ let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
 let view=new Date(); view.setDate(1);
 function ensureSettingsDefaults(){
  const d={minD:3,maxD:3,minN:2,maxN:2,fullTimeHours:160,nightUntilMidnight:false,maxConsecutive:0,restHours:11};
- Object.keys(d).forEach(k=>{if(db.settings[k]===undefined)db.settings[k]=d[k]});
+ Object.keys(d).forEach(k=>{if(db.settings[k]===undefined)db.settings[k]=d[k]}); if(db.settings.weeklyHours===undefined)db.settings.weeklyHours=40;
 }
 ensureSettingsDefaults();
 
@@ -100,6 +101,14 @@ function plan(){db.plans[key()] ||= {};return db.plans[key()]}
 function dateKey(d){return key()+'-'+String(d).padStart(2,'0')}
 function showSection(id){['peopleSection','settingsSection'].forEach(x=>document.getElementById(x).style.display=x===id?'block':'none');document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'})}
 
+function calculatedNightHours(){
+ const start=timeToMinutes(db.settings.nightStart||'19:00');
+ const end=db.settings.nightUntilMidnight?1440:timeToMinutes(db.settings.nightEnd||'07:00');
+ let minutes=end-start;
+ if(minutes<=0)minutes+=1440;
+ return minutes/60;
+}
+function timeToMinutes(v){const [h,m]=String(v||'0:0').split(':').map(Number);return (h||0)*60+(m||0)}
 function businessWorkdays(year,month){
  let count=0, last=new Date(year,month+1,0).getDate();
  for(let d=1;d<=last;d++){let w=new Date(year,month,d).getDay();if(w!==0&&w!==6)count++;}
@@ -142,7 +151,7 @@ function renderStats(){
   for(let d=1;d<=days();d++){
    const v=p[x.id+'_'+d]||'V';
    if(v==='D'){D++;H+=12}
-   if(v==='N'){N++;H+=(db.settings.nightUntilMidnight?5:12)}
+   if(v==='N'){N++;H+=calculatedNightHours()}
    const dow=new Date(view.getFullYear(),view.getMonth(),d).getDay();
    if((dow===0||dow===6)&&(v==='D'||v==='N'))W++;
   }
@@ -167,7 +176,7 @@ function editCell(id,d){
  document.getElementById('modalContent').innerHTML=`
  <div class="choices">
  <button class="choice" onclick="setCell(${id},${d},'D')"><strong>☀️ DENNÍ</strong>12 hodin</button>
- <button class="choice" onclick="setCell(${id},${d},'N')"><strong>🌙 NOČNÍ</strong>12 hodin</button>
+ <button class="choice" onclick="setCell(${id},${d},'N')"><strong>🌙 NOČNÍ</strong>${Number.isInteger(calculatedNightHours())?calculatedNightHours():calculatedNightHours().toFixed(1)} hodin</button>
  <button class="choice" onclick="setCell(${id},${d},'V')"><strong>⚪ VOLNO</strong>bez směny</button>
  <button class="choice" onclick="setCell(${id},${d},'DOV')"><strong>🏖️ DOVOLENÁ</strong>blokuje směnu</button>
  <button class="choice" onclick="setCell(${id},${d},'PN')"><strong>🤒 PN</strong>blokuje směnu</button>
@@ -228,203 +237,188 @@ function generate(){
  const people=db.people, ds=days();
  const DCOUNT=3, NCOUNT=2;
  const dayHours=12;
- const nightHours=db.settings.nightUntilMidnight?5:12;
+ const nightHours=calculatedNightHours();
  const fullFund=monthlyFullTimeFund(view.getFullYear(),view.getMonth());
 
  if(people.length!==5){
-   showError(`Tento plánovací režim vyžaduje přesně 5 sester. Aktuálně je jich ${people.length}.`);
+   showError(`Tento režim je určen pro přesně 5 sester. Aktuálně máte ${people.length}.`);
    return;
  }
- if(people.filter(x=>x.canD).length<3){
-   showError('Nejméně 3 sestry musí mít povolenou denní směnu.');
+ if(people.filter(x=>x.canD&&!x.blocked?.[1]).length<3){
+   showError('Nejméně 3 sestry musí být schopné denní směny.');
    return;
  }
- if(people.filter(x=>x.canN).length<2){
-   showError('Nejméně 2 sestry musí mít povolenou noční směnu.');
+ if(people.filter(x=>x.canN&&!x.blocked?.[1]).length<2){
+   showError('Nejméně 2 sestry musí být schopné noční směny.');
    return;
  }
 
  const dow=d=>new Date(view.getFullYear(),view.getMonth(),d).getDay();
- const isSat=d=>dow(d)===6;
- const isSun=d=>dow(d)===0;
+ const isSat=d=>dow(d)===6, isSun=d=>dow(d)===0, isWeekday=d=>!isSat(d)&&!isSun(d);
  const hardBlocked=(x,d)=>['DOV','PN'].includes((x.blocked||{})[d]);
  const requestedOff=(x,d)=>(x.blocked||{})[d]==='VOL';
 
- // V tomto modelu je na běžný den obsazeno všech 5 sester.
- // Proto je jakákoliv DOV/PN ve všední den tvrdý konflikt.
- for(let d=1;d<=ds;d++){
-   const required=isSat(d)?3:(isSun(d)?2:5);
-   const available=people.filter(x=>!hardBlocked(x,d)).length;
-   if(available<required){
-     showError(`${d}. ${months[view.getMonth()]}: pro tento den nejsou k dispozici 3 denní / 2 noční sestry. Dostupných je jen ${available} z 5.`);
-     return;
+ // Pevná pravidla jsou explicitní:
+ // Po–Pá = 3 D + 2 N
+ // So = 3 D
+ // Ne = 2 N
+ // Nedělní N musí být vybráno ze sobotních D (pokud je to možné – v tomto režimu ano).
+ // Díky tomu se D -> N smí stát pouze při sobotě -> neděli.
+ function pairKey(pair){return pair.map(x=>x.id).sort((a,b)=>a-b).join(',')}
+ const pairs=[];
+ for(let i=0;i<people.length;i++){
+   for(let j=i+1;j<people.length;j++){
+     pairs.push([people[i],people[j]]);
    }
  }
 
- function pairListForWeekday(){
-   const out=[];
-   for(let i=0;i<people.length;i++)for(let j=i+1;j<people.length;j++){
-     const N=[people[i],people[j]];
-     const D=people.filter(x=>!N.includes(x));
-     if(N.every(x=>x.canN)&&D.every(x=>x.canD))out.push({N,D});
-   }
-   return out;
+ function validPairForNight(pair,d){
+   return pair.length===2 && pair.every(x=>x.canN&&!hardBlocked(x,d));
  }
- const weekdayPairs=pairListForWeekday();
- if(!weekdayPairs.length){
-   showError('Nelze vytvořit běžný den: potřebujeme 2 sestry na noční a zbývající 3 na denní podle jejich kompetencí.');
-   return;
+ function validDayGroup(group,d){
+   return group.length===3 && group.every(x=>x.canD&&!hardBlocked(x,d));
  }
 
- // Generate a complete month as a sequence of assignments.
- // Weekdays: one of the 10 possible N-pairs (with D = remaining 3).
- // Saturday: choose 3 D from available.
- // Sunday: choose 2 N, preferably from Saturday's D group.
- function chooseComb(arr,k){
-   const out=[];
-   function rec(start,p){
-     if(p.length===k){out.push(p.slice());return}
-     for(let i=start;i<=arr.length-(k-p.length);i++){p.push(arr[i]);rec(i+1,p);p.pop()}
-   }
-   rec(0,[]);
-   return out;
+ // Vrací všechny možné noční dvojice na následující blok.
+ // Aby nebyl D -> N mezi pátkem a pondělím, nový pár musí být disjunktní
+ // s předchozím nočním párem a musí vzniknout ze sobotní trojice.
+ function nextNightPairs(prevPair,sunday){
+   const prevIds=new Set(prevPair.map(x=>x.id));
+   return pairs.filter(pair=>{
+     if(pair.some(x=>prevIds.has(x.id)))return false;
+     return validPairForNight(pair,sunday);
+   });
  }
 
- function buildCandidate(randomize){
-   const state=Object.fromEntries(people.map(x=>[x.id,{
-     hours:0,nights:0,weekends:0,byDay:{}, last:null
-   }]));
-   const assignment={};
-   let lastWeekdayPair=null;
-   let saturdayD=null;
+ // Rozdělení je po blocích: Po–Pá stejný noční pár, So = jeho doplněk,
+ // Ne = nový noční pár ze sobotní denní trojice. To je jediný povolený přechod D -> N.
+ function evaluateSequence(initialPair,nextPairs){
+   let assignment={};
+   let hours=Object.fromEntries(people.map(x=>[x.id,0]));
+   let nights=Object.fromEntries(people.map(x=>[x.id,0]));
+   let weekends=Object.fromEntries(people.map(x=>[x.id,0]));
 
-   // Helper cost at current day. Penalize people that are lagging their monthly target.
-   const ratesSum=people.reduce((s,x)=>s+(+x.rate||1),0);
-   const targetH=x=>fullFund*(+x.rate||1);
-   const targetN=x=>(ds*2/5)*(+x.rate||1);
-
-   function pickBest(list,d,t){
-     const scored=list.map(x=>{
-       const st=state[x.id];
-       let c=0;
-       const addH=t==='D'?dayHours:nightHours;
-       c+=Math.pow((st.hours+addH)-targetH(x),2)*0.55;
-       c+=Math.pow((st.nights+(t==='N'?1:0))-targetN(x),2)*65;
-       if(requestedOff(x,d))c+=900;
-       if([0,6].includes(dow(d)))c+=st.weekends*2;
-       // Avoid repeating the exact same weekday pair when possible.
-       if(lastWeekdayPair && t==='N' && lastWeekdayPair.includes(x.id))c+=1;
-       return {x,c:c+(randomize?Math.random()*3:0)};
-     });
-     scored.sort((a,b)=>a.c-b.c);
-     return scored[0]?.x||null;
-   }
+   let currentPair=initialPair.slice();
 
    for(let d=1;d<=ds;d++){
-     assignment[d]={};
+     const w=dow(d);
 
      if(isSat(d)){
-       const avail=people.filter(x=>x.canD&&!hardBlocked(x,d));
-       const combos=chooseComb(avail,3);
-       if(!combos.length)return null;
-       combos.sort((a,b)=>{
-         function c(g){
-           return g.reduce((s,x)=>s+Math.pow((state[x.id].hours+dayHours)-targetH(x),2)*0.5+
-             Math.pow(state[x.id].nights-targetN(x),2)*60+
-             (requestedOff(x,d)?900:0),0);
-         }
-         return c(a)-c(b)+(randomize?Math.random()*4:0);
-       });
-       saturdayD=combos[0].map(x=>x.id);
-       combos[0].forEach(x=>{assignment[d][x.id]='D';state[x.id].hours+=dayHours;state[x.id].byDay[d]='D';state[x.id].weekends++});
-       people.filter(x=>!saturdayD.includes(x.id)).forEach(x=>{state[x.id].last=null});
+       const D=people.filter(x=>!currentPair.some(n=>n.id===x.id));
+       if(!validDayGroup(D,d))return null;
+       assignment[d]={};
+       D.forEach(x=>{assignment[d][x.id]='D';hours[x.id]+=dayHours;weekends[x.id]++});
+       currentPair._saturdayD=D;
      } else if(isSun(d)){
-       const pool=(saturdayD||[]).map(id=>people.find(x=>x.id===id)).filter(Boolean).filter(x=>x.canN&&!hardBlocked(x,d));
-       let combos=chooseComb(pool,2);
-       if(!combos.length){
-         // Fallback: any available 2 N, still respecting Sunday=N only.
-         combos=chooseComb(people.filter(x=>x.canN&&!hardBlocked(x,d)),2);
-       }
-       if(!combos.length)return null;
-       combos.sort((a,b)=>{
-         function c(g){
-           const overlap=g.filter(x=>(saturdayD||[]).includes(x.id)).length;
-           return (2-overlap)*1200+
-             g.reduce((s,x)=>s+Math.pow((state[x.id].hours+nightHours)-targetH(x),2)*0.5+
-             Math.pow((state[x.id].nights+1)-targetN(x),2)*70+
-             (requestedOff(x,d)?900:0),0);
-         }
-         return c(a)-c(b)+(randomize?Math.random()*4:0);
-       });
-       const chosen=combos[0];
-       chosen.forEach(x=>{assignment[d][x.id]='N';state[x.id].hours+=nightHours;state[x.id].nights++;state[x.id].byDay[d]='N';state[x.id].weekends++});
+       // nextPairs[d] is the selected pair for this Sunday.
+       const chosen=nextPairs[d];
+       if(!chosen || chosen.length!==2)return null;
+       // Must be from Saturday's D.
+       const satD=(assignment[d-1] ? Object.keys(assignment[d-1]).filter(id=>assignment[d-1][id]==='D').map(Number) : []);
+       if(!chosen.every(x=>satD.includes(x.id)))return null;
+       if(!validPairForNight(chosen,d))return null;
+       assignment[d]={};
+       chosen.forEach(x=>{assignment[d][x.id]='N';hours[x.id]+=nightHours;nights[x.id]++;weekends[x.id]++});
+       currentPair=chosen.slice();
      } else {
-       // Weekday: all 5 work, exactly 2 N + 3 D.
-       const valid=weekdayPairs.filter(pair=>
-         pair.D.every(x=>!hardBlocked(x,d)) && pair.N.every(x=>!hardBlocked(x,d))
-       );
-       if(!valid.length)return null;
-       valid.sort((a,b)=>{
-         function c(pair){
-           let s=0;
-           pair.D.forEach(x=>{s+=Math.pow((state[x.id].hours+dayHours)-targetH(x),2)*0.5;if(requestedOff(x,d))s+=900});
-           pair.N.forEach(x=>{s+=Math.pow((state[x.id].hours+nightHours)-targetH(x),2)*0.5;s+=Math.pow((state[x.id].nights+1)-targetN(x),2)*80;if(requestedOff(x,d))s+=900});
-           if(lastWeekdayPair){
-             const repeatA=pair.N.every(x=>lastWeekdayPair.includes(x.id));
-             if(repeatA)s+=20;
-           }
-           return s;
-         }
-         return c(a)-c(b)+(randomize?Math.random()*6:0);
-       });
-       const pair=valid[0];
-       pair.D.forEach(x=>{assignment[d][x.id]='D';state[x.id].hours+=dayHours;state[x.id].byDay[d]='D'});
-       pair.N.forEach(x=>{assignment[d][x.id]='N';state[x.id].hours+=nightHours;state[x.id].nights++;state[x.id].byDay[d]='N'});
-       lastWeekdayPair=pair.N.map(x=>x.id);
+       if(!validPairForNight(currentPair,d))return null;
+       const D=people.filter(x=>!currentPair.some(n=>n.id===x.id));
+       if(!validDayGroup(D,d))return null;
+       assignment[d]={};
+       D.forEach(x=>{assignment[d][x.id]='D';hours[x.id]+=dayHours});
+       currentPair.forEach(x=>{assignment[d][x.id]='N';hours[x.id]+=nightHours;nights[x.id]++});
      }
    }
-   return {state,assignment};
- }
 
- function objective(candidate){
-   let c=0;
-   const hs=people.map(x=>candidate.state[x.id].hours);
-   const ns=people.map(x=>candidate.state[x.id].nights);
-   // Primary: everyone should be as close as possible to their own monthly fund.
-   for(const x of people){
-     const target=targetH(x);
-     c+=Math.pow(candidate.state[x.id].hours-target,2)*1.1;
-     c+=Math.pow(candidate.state[x.id].nights-targetN(x),2)*220;
-     for(let d=1;d<=ds;d++)if(requestedOff(x,d)&&candidate.assignment[d]?.[x.id])c+=1200;
-   }
-   // Strong fairness terms.
-   c+=Math.pow(Math.max(...hs)-Math.min(...hs),2)*3;
-   c+=Math.pow(Math.max(...ns)-Math.min(...ns),2)*2800;
-   // Weekend continuity Saturday D -> Sunday N: aim for 2/2 whenever possible.
+   // Ověření přechodů a přesných počtů.
    for(let d=1;d<=ds;d++){
-     if(!isSun(d)||d===1)continue;
-     const satA=candidate.assignment[d-1]||{}, sunA=candidate.assignment[d]||{};
-     const overlap=Object.keys(sunA).filter(id=>sunA[id]==='N'&&satA[id]==='D').length;
-     c+=(2-overlap)*1800;
+     const a=assignment[d]||{};
+     const D=Object.values(a).filter(v=>v==='D').length;
+     const N=Object.values(a).filter(v=>v==='N').length;
+     if(isSat(d) && (D!==3||N!==0))return null;
+     if(isSun(d) && (D!==0||N!==2))return null;
+     if(isWeekday(d) && (D!==3||N!==2))return null;
+
+     // Žádná běžná D -> N ani N -> D.
+     if(d>1){
+       for(const x of people){
+         const prev=assignment[d-1]?.[x.id], cur=assignment[d]?.[x.id];
+         if(prev==='D'&&cur==='N'&&!isSun(d))return null;
+         if(prev==='N'&&cur==='D')return null;
+       }
+     }
    }
-   return c;
+   return {assignment,hours,nights,weekends};
  }
 
- let best=null,bestC=Infinity;
- for(let i=0;i<1200;i++){
-   const cand=buildCandidate(true);
-   if(!cand)continue;
-   const c=objective(cand);
-   if(c<bestC){bestC=c;best=cand}
-   const ns=people.map(x=>cand.state[x.id].nights);
-   const hs=people.map(x=>cand.state[x.id].hours);
-   if(Math.max(...ns)-Math.min(...ns)<=1 && Math.max(...hs)-Math.min(...hs)<=12)break;
- }
-
- if(!best){
-   showError('Nepodařilo se najít plán splňující všechna zadaná pravidla. Zkontrolujte kompetence a dovolené/PN.');
+ // Enumerate all valid weekend rotations. With 5 people there are only
+ // 10 starting pairs and at most 3 possible disjoint next pairs per Sunday.
+ let candidates=[];
+ const startPairs=pairs.filter(pair=>validPairForNight(pair,1));
+ if(!startPairs.length){
+   showError('Na začátku měsíce nelze vybrat dvě sestry pro noční směnu kvůli kompetencím nebo absencím.');
    return;
  }
+
+ // Find all Sundays that have a Saturday before them and choose a new pair.
+ // We use DFS over weekend transitions; month length keeps this tiny.
+ function enumerate(currentPair, d, nextMap){
+   if(d>ds){
+     const result=evaluateSequence(currentPair,nextMap);
+     if(result)candidates.push(result);
+     return;
+   }
+   if(isSun(d)){
+     const opts=nextNightPairs(currentPair,d);
+     if(!opts.length)return;
+     // Prefer requested-off-respecting pairs first, but enumerate all.
+     opts.sort((a,b)=>{
+       const ca=a.filter(x=>requestedOff(x,d)).length;
+       const cb=b.filter(x=>requestedOff(x,d)).length;
+       return ca-cb;
+     });
+     for(const pair of opts){
+       // If this Sunday has blocked D/PN in the pair, nextNightPairs already ruled it out.
+       const copy={...nextMap,[d]:pair};
+       enumerate(pair,d+1,copy);
+     }
+   } else {
+     enumerate(currentPair,d+1,nextMap);
+   }
+ }
+
+ for(const initial of startPairs)enumerate(initial,1,{});
+
+ if(!candidates.length){
+   showError('Při současných DOV/PN a kompetencích nelze sestavit kompletní plán s přesným obsazením 3× D a 2× N. Zkontrolujte dostupnost všech pěti sester.');
+   return;
+ }
+
+ // Vyber nejrovnoměrnější kandidát.
+ function objective(c){
+   let v=0;
+   const hs=people.map(x=>c.hours[x.id]);
+   const ns=people.map(x=>c.nights[x.id]);
+   const targetH=x=>fullFund*(+x.rate||1);
+   for(const x of people){
+     v+=Math.pow(c.hours[x.id]-targetH(x),2)*1.2;
+     v+=Math.pow(c.nights[x.id]-(ds*2/5),2)*350;
+     for(let d=1;d<=ds;d++)if(requestedOff(x,d)&&c.assignment[d]?.[x.id])v+=1600;
+   }
+   v+=Math.pow(Math.max(...hs)-Math.min(...hs),2)*4;
+   v+=Math.pow(Math.max(...ns)-Math.min(...ns),2)*3000;
+   // Prefer 2/2 weekend continuity.
+   for(let d=2;d<=ds;d++){
+     if(isSun(d)){
+       const sat=c.assignment[d-1]||{}, sun=c.assignment[d]||{};
+       const overlap=Object.keys(sun).filter(id=>sun[id]==='N'&&sat[id]==='D').length;
+       v+=(2-overlap)*2500;
+     }
+   }
+   return v;
+ }
+ candidates.sort((a,b)=>objective(a)-objective(b));
+ const best=candidates[0];
 
  const p={};
  people.forEach(x=>{
@@ -434,26 +428,40 @@ function generate(){
      if(best.assignment[d]?.[x.id])p[x.id+'_'+d]=best.assignment[d][x.id];
    }
  });
- db.plans[key()]=p;save();render();
+ db.plans[key()]=p;
+ save();render();
 
- // A final hard validation directly against the generated result.
- const errs=[];
+ // Finální kontrola proti právě vytvořenému plánu.
+ const errors=[];
  for(let d=1;d<=ds;d++){
-   const D=people.filter(x=>p[x.id+'_'+d]==='D').length;
-   const N=people.filter(x=>p[x.id+'_'+d]==='N').length;
-   if(isSat(d) && (D!==3||N!==0))errs.push(`${d}. sobota: musí být 3 D a 0 N`);
-   else if(isSun(d) && (D!==0||N!==2))errs.push(`${d}. neděle: musí být 0 D a 2 N`);
-   else if(!isSat(d)&&!isSun(d) && (D!==3||N!==2))errs.push(`${d}. pracovní den: musí být 3 D a 2 N`);
+   let D=0,N=0;
+   for(const x of people){if(p[x.id+'_'+d]==='D')D++;if(p[x.id+'_'+d]==='N')N++}
+   if(isSat(d)&&(D!==3||N!==0))errors.push(`${d}. sobota: musí být 3 D a 0 N`);
+   if(isSun(d)&&(D!==0||N!==2))errors.push(`${d}. neděle: musí být 0 D a 2 N`);
+   if(isWeekday(d)&&(D!==3||N!==2))errors.push(`${d}. pracovní den: musí být 3 D a 2 N`);
+   for(const x of people){
+     const cur=p[x.id+'_'+d],prev=p[x.id+'_'+(d-1)];
+     if(prev==='D'&&cur==='N'&&!isSun(d))errors.push(`${x.name}: D → N ${d}.`);
+     if(prev==='N'&&cur==='D')errors.push(`${x.name}: N → D ${d}.`);
+     if(isSun(d)&&cur==='D')errors.push(`${x.name}: ${d}. neděle – D není povolena`);
+     if(isSat(d)&&cur==='N')errors.push(`${x.name}: ${d}. sobota – N není povolena`);
+   }
  }
- if(errs.length){showError('Generování skončilo nečekanou chybou: '+errs.slice(0,5).join('; '));return;}
+ if(errors.length){
+   delete db.plans[key()];
+   save();
+   showError('Interní kontrola našla chybu v generovaném plánu: '+errors.slice(0,5).join('; '));
+   render();
+   return;
+ }
 
- const hs=people.map(x=>Math.round(best.state[x.id].hours));
- const ns=people.map(x=>best.state[x.id].nights);
+ const hs=people.map(x=>Math.round(best.hours[x.id]));
+ const ns=people.map(x=>best.nights[x.id]);
  document.getElementById('notice').className='notice';
  document.getElementById('notice').innerHTML=
-  `<b>✓ Plán byl vygenerován správně.</b> Po–Pá 3× D + 2× N, sobota 3× D, neděle 2× N. `+
-  `Rozdělení: ${Math.min(...hs)}–${Math.max(...hs)} h a ${Math.min(...ns)}–${Math.max(...ns)} nočních. `+
-  `Systém preferuje sobotní D → nedělní N.`;
+   `<b>✓ Plán byl vygenerován správně.</b> Po–Pá 3× D + 2× N, sobota 3× D, neděle 2× N. `+
+   `Rozdělení: ${Math.min(...hs)}–${Math.max(...hs)} h a ${Math.min(...ns)}–${Math.max(...ns)} nočních. `+
+   `Sobotní D → nedělní N je použito tam, kde je to možné.`;
 }
 function showError(msg){let e=document.getElementById('notice');e.className='notice err';e.innerHTML='<b>⚠️ Plán nelze vytvořit</b><br>'+esc(msg)}
 
@@ -545,37 +553,37 @@ setTimeout(()=>window.print(),350);
 function validate(){
  let p=plan(),errors=[];
  const hasRealContent=Object.values(p).some(v=>['D','N','DOV','PN','VOL'].includes(v));
+ const e=document.getElementById('notice');
  if(!hasRealContent){
-   const e=document.getElementById('notice');
    e.className='notice';
-   e.innerHTML='<b>ℹ️ Tento měsíc zatím nemá plán.</b> Klikněte na „Vygenerovat férový plán“. Dovolenou nebo volno můžete přidat kliknutím na konkrétní den.';
+   e.innerHTML='<b>ℹ️ Tento měsíc zatím nemá plán.</b> Klikněte na „Vygenerovat férový plán“. Dovolenou, PN nebo požadavek volna zadáte kliknutím na konkrétní den.';
    return;
  }
+ const dow=d=>new Date(view.getFullYear(),view.getMonth(),d).getDay();
  for(let d=1;d<=days();d++){
-  let D=db.people.filter(x=>p[x.id+'_'+d]==='D').length,N=db.people.filter(x=>p[x.id+'_'+d]==='N').length;
-  if(isSat(d)){if(D!==3)errors.push(`${d}. ${months[view.getMonth()]} – sobota musí mít 3 denní směny`);} else if(isSun(d)){if(D!==0)errors.push(`${d}. ${months[view.getMonth()]} – neděle nesmí mít denní směnu`);} else if(D!==3)errors.push(`${d}. ${months[view.getMonth()]} – pracovní den musí mít 3 denní směny`);
-  if(isSat(d)){if(N!==0)errors.push(`${d}. ${months[view.getMonth()]} – sobota nesmí mít noční směnu`);} else if(isSun(d)){if(N!==2)errors.push(`${d}. ${months[view.getMonth()]} – neděle musí mít 2 noční směny`);} else if(N!==2)errors.push(`${d}. ${months[view.getMonth()]} – pracovní den musí mít 2 noční směny`);
+   let D=0,N=0;
+   for(const x of db.people){if(p[x.id+'_'+d]==='D')D++;if(p[x.id+'_'+d]==='N')N++}
+   if(dow(d)===6 && (D!==3||N!==0))errors.push(`${d}. sobota: musí být 3 D a 0 N`);
+   else if(dow(d)===0 && (D!==0||N!==2))errors.push(`${d}. neděle: musí být 0 D a 2 N`);
+   else if(dow(d)!==0 && dow(d)!==6 && (D!==3||N!==2))errors.push(`${d}. pracovní den: musí být 3 D a 2 N`);
+   for(const x of db.people){
+     const v=p[x.id+'_'+d];
+     if(dow(d)===6&&v==='N')errors.push(`${x.name}: ${d}. sobota – N není povolena`);
+     if(dow(d)===0&&v==='D')errors.push(`${x.name}: ${d}. neděle – D není povolena`);
+     if(d>1){
+       const prev=p[x.id+'_'+(d-1)];
+       if(prev==='D'&&v==='N'&&dow(d)!==0)errors.push(`${x.name}: ${d}. – D → N není povoleno`);
+       if(prev==='N'&&v==='D')errors.push(`${x.name}: ${d}. – N → D není povoleno`);
+     }
+   }
  }
- for(let d=1;d<=days();d++){
-  for(const x of db.people){
-    const v=p[x.id+'_'+d];
-    if(isSat(d) && v==='N')errors.push(`${x.name}: ${d}. sobota – noční směna není povolena`);
-    if(isSun(d) && v==='D')errors.push(`${x.name}: ${d}. neděle – denní směna není povolena`);
-  }
+ if(errors.length){
+   e.className='notice err';
+   e.innerHTML='<b>⚠️ Plán má problém</b><br>'+errors.slice(0,6).map(esc).join('<br>')+(errors.length>6?`<br>… dalších ${errors.length-6}`:'');
+ }else{
+   e.className='notice';
+   e.innerHTML='<b>✓ Plán je v pořádku.</b> Po–Pá 3× D + 2× N, sobota 3× D, neděle 2× N.';
  }
- db.people.forEach(x=>{
-  for(let d=1;d<=days();d++){
-   let v=p[x.id+'_'+d],b=(x.blocked||{})[d];
-   if(b&&b!==v)errors.push(`${x.name}: ${d}. – konflikt s ${b}`);
-   if(v==='D'&&!x.canD)errors.push(`${x.name}: ${d}. – nemůže denní`);
-   if(v==='N'&&!x.canN)errors.push(`${x.name}: ${d}. – nemůže noční`);
-   if(v==='DOV'||v==='PN'||v==='VOL')continue;
-   if(v==='D'&&d>1&&p[x.id+'_'+(d-1)]==='N')errors.push(`${x.name}: ${d}. – noční → denní`);
-  }
- });
- let e=document.getElementById('notice');
- if(errors.length){e.className='notice err';e.innerHTML='<b>⚠️ Plán má problém</b><br>'+errors.slice(0,6).map(esc).join('<br>')+(errors.length>6?`<br>… dalších ${errors.length-6}`:'')}
- else if(!db.people.length){e.className='notice warn';e.textContent='Přidejte sestry.'}
 }
 render();
 </script>
