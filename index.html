@@ -31,7 +31,7 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 <button class="primary" id="generate">🤖 Vygenerovat férový plán</button>
 <button class="secondary" onclick="showSection('peopleSection')">👩‍⚕️ Sestry</button>
 <button class="plain" onclick="showSection('settingsSection')">⚙️ Nastavení</button>
-<button class="plain" onclick="window.print()">🖨️ Tisk</button>
+<button class="plain" onclick="openPdf()">📄 Otevřít v PDF</button>
 <div class="spacer"></div><span class="small" id="saveStatus">Uloženo v tomto prohlížeči</span>
 </div>
 <div id="notice" class="notice">Nastavte sestry, případně dovolené, a potom klikněte na „Vygenerovat férový plán“.</div>
@@ -168,89 +168,321 @@ document.getElementById('saveSettings').onclick=()=>{['dayStart','dayEnd','night
    honor requested leave.
 */
 function generate(){
- const people=db.people, ds=days(), needD=db.settings.needD, needN=db.settings.needN;
- if(people.length < Math.max(needD,needN)){showError('Je méně sester než je požadováno na směně.');return}
- const shifts=[];for(let d=1;d<=ds;d++){for(let i=0;i<needD;i++)shifts.push({d,t:'D',slot:i});for(let i=0;i<needN;i++)shifts.push({d,t:'N',slot:i})}
- const target=Object.fromEntries(people.map(x=>[x.id,Math.round((ds/30)*168*x.rate/12)]));
- let best=null,bestCost=Infinity, attempts=0;
- // Try multiple orderings; hard-to-fill shifts first dynamically.
- function blocked(x,d){let b=x.blocked||{};return b[d]==='DOV'||b[d]==='PN'||b[d]==='VOL'}
- function can(x, d,t,state){
-   if((t==='D'&&!x.canD)||(t==='N'&&!x.canN)||blocked(x,d))return false;
-   const a=state[x.id], prev=a[a.length-1];
-   if(prev && prev.d===d)return false;
-   if(prev && prev.t==='N'&&t==='D')return false;
-   if(prev && d-prev.d<2 && prev.t==='N')return false;
-   // count consecutive worked calendar days ending at d
-   let run=1;for(let q=d-1;q>=1;q--){if(a.some(z=>z.d===q)){run++}else break}
-   if(run>db.settings.maxConsecutive)return false;
+ const people=db.people, ds=days(), needD=+db.settings.needD||1, needN=+db.settings.needN||1;
+ const totalD=ds*needD, totalN=ds*needN;
+ if(people.length < needD+needN){
+   showError(`Pro každé obsazení dne potřebujete alespoň ${needD+needN} různých sester.`);
+   return;
+ }
+
+ const rateSum=people.reduce((s,x)=>s+(+x.rate||1),0);
+ const targetTotal=Object.fromEntries(people.map(x=>[x.id,totalD+totalN===0?0:(totalD+totalN)*(+x.rate||1)/rateSum]));
+ const targetNight=Object.fromEntries(people.map(x=>[x.id,totalN===0?0:totalN*(+x.rate||1)/rateSum]));
+
+ function blocked(x,d){
+   const b=(x.blocked||{})[d];
+   return b==='DOV'||b==='PN';
+ }
+ function preferredOff(x,d){ return (x.blocked||{})[d]==='VOL'; }
+
+ function canWork(state,x,d,t){
+   if(blocked(x,d)) return false;
+   if(t==='D' && !x.canD) return false;
+   if(t==='N' && !x.canN) return false;
+   if(state[x.id].byDay[d]) return false;
+   if(state[x.id].byDay[d-1]==='N' && t==='D') return false;
+   let run=0;
+   for(let q=d-1;q>=1;q--){
+     if(state[x.id].byDay[q]) run++; else break;
+   }
+   if(run>=+db.settings.maxConsecutive) return false;
    return true;
  }
- function cost(state){
-   let c=0;
+
+ function makeState(){
+   return Object.fromEntries(people.map(x=>[x.id,{
+     byDay:{}, total:0, nights:0, weekends:0, lastType:null
+   }]));
+ }
+
+ function finalCost(state){
+   let cost=0;
+   const maxTotal=Math.max(...people.map(x=>state[x.id].total));
+   const minTotal=Math.min(...people.map(x=>state[x.id].total));
+   const maxN=Math.max(...people.map(x=>state[x.id].nights));
+   const minN=Math.min(...people.map(x=>state[x.id].nights));
+
+   // Silná priorita: směny i noční musí být rovnoměrné.
+   cost += Math.pow(maxTotal-minTotal,2)*180;
+   cost += Math.pow(maxN-minN,2)*260;
+
    for(const x of people){
-     const a=state[x.id], hours=a.length*12, diff=Math.abs(hours-target[x.id]);
-     c+=diff*8;
-     const nights=a.filter(z=>z.t==='N').length; c+=nights*nights*0.8;
-     const wk=a.filter(z=>{let w=new Date(view.getFullYear(),view.getMonth(),z.d).getDay();return w===0||w===6}).length;c+=wk*wk*0.35;
+     const st=state[x.id];
+     cost += Math.pow(st.total-targetTotal[x.id],2)*18;
+     cost += Math.pow(st.nights-targetNight[x.id],2)*42;
+
+     const targetWeekend = (Math.floor((ds*([0,6].filter(Boolean).length||2))/7) || 1) * (x.rate||1)/rateSum;
+     cost += Math.pow(st.weekends-targetWeekend,2)*4;
+
+     for(let d=1;d<=ds;d++){
+       if(preferredOff(x,d) && st.byDay[d]) cost += 35;
+     }
    }
-   return c;
+   return cost;
  }
- function lowerBound(state, idx){
-   // Small admissible bound: no one should exceed target by too much.
-   let c=0;for(const x of people)c+=Math.max(0,state[x.id].length-target[x.id])*8;
-   return c;
- }
- function recurse(state, remaining){
-   attempts++;
-   if(attempts>250000)return;
-   if(!remaining.length){let c=cost(state);if(c<bestCost){bestCost=c;best=JSON.parse(JSON.stringify(state))}return}
-   if(lowerBound(state,remaining.length)>=bestCost)return;
-   // choose the next shift with fewest candidates (forward checking)
-   let chosen=null,cands=null;
-   for(const s of remaining){
-     let cs=people.filter(x=>can(x,s.d,s.t,state));
-     if(!cs.length)return;
-     if(!cands||cs.length<cands.length){chosen=s;cands=cs;if(cs.length===1)break}
+
+ let best=null, bestCost=Infinity, nodes=0, deadline=Date.now()+4000;
+
+ function lowerBound(state,d){
+   // Dolní odhad pouze pro rovnováhu total/nocí, aby šlo bezpečně ořezávat.
+   if(!best) return 0;
+   let lb=0;
+   const remainingDays=ds-d+1;
+   for(const x of people){
+     const st=state[x.id];
+     const minFinal=st.total;
+     const maxFinal=st.total+remainingDays*(needD+needN);
+     const t=targetTotal[x.id];
+     if(t<minFinal) lb += Math.pow(minFinal-t,2)*18;
+     else if(t>maxFinal) lb += Math.pow(t-maxFinal,2)*18;
    }
-   // Prefer people who are below target and have fewer shifts, shuffle equal candidates.
-   cands.sort((a,b)=>{
-     let aa=state[a.id].length,bb=state[b.id].length;
-     let sa=Math.abs((aa+1)-target[a.id]),sb=Math.abs((bb+1)-target[b.id]);
-     return sa-sb || aa-bb || Math.random()-.5;
+   return lb;
+ }
+
+ function buildPairs(state,d){
+   const Ds=people.filter(x=>canWork(state,x,d,'D'));
+   const Ns=people.filter(x=>canWork(state,x,d,'N'));
+   if(Ds.length<needD || Ns.length<needN) return [];
+
+   const out=[];
+   function comb(arr,k,start,prefix){
+     if(k===0){out.push(prefix.slice());return}
+     for(let i=start;i<=arr.length-k;i++){
+       prefix.push(arr[i]);comb(arr,k-1,i+1,prefix);prefix.pop();
+     }
+   }
+   const dSets=[];comb(Ds,needD,0,[],dSets);
+   const nSets=[];comb(Ns,needN,0,[],nSets);
+
+   for(const D of dSets) for(const N of nSets){
+     const ids=new Set();
+     let ok=true;
+     for(const x of [...D,...N]){
+       if(ids.has(x.id)){ok=false;break}
+       ids.add(x.id);
+     }
+     if(ok) out.push({D,N});
+   }
+
+   const weekend=[0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay());
+   out.sort((a,b)=>{
+     function pairCost(pair){
+       let c=0;
+       for(const x of pair.D){
+         c+=Math.pow(state[x.id].total+1-targetTotal[x.id],2)*18;
+         c+=Math.pow(state[x.id].nights-targetNight[x.id],2)*18;
+         if(preferredOff(x,d)) c+=35;
+         if(weekend)c+=Math.pow(state[x.id].weekends+1,2)*2;
+       }
+       for(const x of pair.N){
+         c+=Math.pow(state[x.id].total+1-targetTotal[x.id],2)*18;
+         c+=Math.pow(state[x.id].nights+1-targetNight[x.id],2)*55;
+         if(preferredOff(x,d)) c+=35;
+         if(weekend)c+=Math.pow(state[x.id].weekends+1,2)*2;
+       }
+       return c+Math.random()*0.5;
+     }
+     return pairCost(a)-pairCost(b);
    });
-   // Keep search manageable; first pass deterministic-ish, later attempts randomized.
-   for(const x of cands){
-     state[x.id].push(chosen);
-     const next=remaining.filter(s=>s!==chosen);
-     recurse(state,next);
-     state[x.id].pop();
-     if(attempts>250000)return;
+   return out;
+ }
+
+ function apply(state,d,pair){
+   const weekend=[0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay());
+   for(const x of pair.D){
+     state[x.id].byDay[d]='D';state[x.id].total++;
+     if(weekend)state[x.id].weekends++;
+   }
+   for(const x of pair.N){
+     state[x.id].byDay[d]='N';state[x.id].total++;state[x.id].nights++;
+     if(weekend)state[x.id].weekends++;
    }
  }
- // Pre-seed requested leave as empty; solve several times with shuffled shifts to improve fairness.
- for(let r=0;r<8 && attempts<250000;r++){
-   const shuffled=[...shifts].sort(()=>Math.random()-.5);
-   const state=Object.fromEntries(people.map(x=>[x.id,[]]));
-   recurse(state,shuffled);
+ function undo(state,d,pair){
+   const weekend=[0,6].includes(new Date(view.getFullYear(),view.getMonth(),d).getDay());
+   for(const x of pair.D){
+     delete state[x.id].byDay[d];state[x.id].total--;
+     if(weekend)state[x.id].weekends--;
+   }
+   for(const x of pair.N){
+     delete state[x.id].byDay[d];state[x.id].total--;state[x.id].nights--;
+     if(weekend)state[x.id].weekends--;
+   }
  }
- if(!best){showError('Nepodařilo se najít plán splňující všechna tvrdá pravidla. Zkuste snížit počet lidí na směně, upravit volno nebo přidat možnost nočních.');return}
- let p={};
- people.forEach(x=>{for(let d=1;d<=ds;d++)p[x.id+'_'+d]='V'});
- for(const x of people)for(const a of best[x.id])p[x.id+'_'+a.d]=a.t;
- // Preserve explicit DOV/PN/VOL entries from current month.
- people.forEach(x=>Object.keys(x.blocked||{}).forEach(d=>{p[x.id+'_'+d]=x.blocked[d]}));
- db.plans[key()]=p;save();render();
+
+ function dfs(state,d){
+   nodes++;
+   if(Date.now()>deadline || nodes>800000) return;
+
+   if(d>ds){
+     const c=finalCost(state);
+     if(c<bestCost){
+       bestCost=c;
+       best=JSON.parse(JSON.stringify(state));
+     }
+     return;
+   }
+
+   if(lowerBound(state,d)>=bestCost) return;
+
+   const pairs=buildPairs(state,d);
+   if(!pairs.length)return;
+
+   // Na konci měsíce zpřísni hledání: preferuj kandidáty, kteří mají
+   // stále největší "dluh" vůči cílovému počtu nočních/hodin.
+   for(const pair of pairs){
+     apply(state,d,pair);
+
+     // Jednoduchý forward check pro další den.
+     if(d===ds || buildPairs(state,d+1).length>0){
+       dfs(state,d+1);
+     }
+
+     undo(state,d,pair);
+     if(Date.now()>deadline || nodes>800000) return;
+   }
+ }
+
+ // Více nezávislých pokusů. Nebereme první nalezené řešení;
+ // vybereme nejlepší nalezený celý měsíc.
+ for(let attempt=0;attempt<25;attempt++){
+   deadline=Date.now()+350;
+   nodes=0;
+   const state=makeState();
+   dfs(state,1);
+ }
+
+ if(!best){
+   showError('Nepodařilo se najít kompletní plán. Zkontrolujte dovolené, PN, možnost nočních a počet sester na směně.');
+   return;
+ }
+
+ const p={};
+ for(const x of people){
+   for(let d=1;d<=ds;d++){
+     const b=(x.blocked||{})[d];
+     p[x.id+'_'+d]=b==='DOV'||b==='PN'?b:(b==='VOL'?'VOL':'V');
+   }
+   for(let d=1;d<=ds;d++){
+     const v=best[x.id].byDay[d];
+     if(v) p[x.id+'_'+d]=v;
+   }
+ }
+ db.plans[key()]=p;
+ save();render();
+
+ const totals=people.map(x=>best[x.id].total*12);
+ const nights=people.map(x=>best[x.id].nights);
+ const hMin=Math.min(...totals),hMax=Math.max(...totals);
+ const nMin=Math.min(...nights),nMax=Math.max(...nights);
+
  document.getElementById('notice').className='notice';
- document.getElementById('notice').innerHTML='<b>✓ Plán byl vygenerován.</b> Směny jsou rozdělené s ohledem na úvazky, noční, víkendy, odpočinek a zadané absence.';
+ document.getElementById('notice').innerHTML=
+  `<b>✓ Plán byl vygenerován.</b> Rozdělení: ${hMin}–${hMax} hodin na sestru a ${nMin}–${nMax} nočních na sestru. Cílem je co nejrovnoměrnější rozdělení podle úvazku.`;
 }
 function showError(msg){let e=document.getElementById('notice');e.className='notice err';e.innerHTML='<b>⚠️ Plán nelze vytvořit</b><br>'+esc(msg)}
+
+function openPdf(){
+  // Otevře čistý tiskový náhled v novém okně.
+  // V dialogu prohlížeče lze zvolit „Uložit jako PDF“ nebo tisk na tiskárnu.
+  const title = `Plán směn – ${months[view.getMonth()]} ${view.getFullYear()}`;
+  const p = plan();
+
+  let rows = '';
+  db.people.forEach(x=>{
+    let cells = '';
+    for(let d=1; d<=days(); d++){
+      const v = p[x.id+'_'+d] || 'V';
+      const dow = new Date(view.getFullYear(),view.getMonth(),d).getDay();
+      const weekend = (dow===0||dow===6) ? ' weekend' : '';
+      cells += `<td class="${v}${weekend}">${esc(v)}</td>`;
+    }
+    rows += `<tr><th>${esc(x.name)}<br><small>${x.rate} úv.</small></th>${cells}</tr>`;
+  });
+
+  let dates = '';
+  for(let d=1; d<=days(); d++){
+    const dow = new Date(view.getFullYear(),view.getMonth(),d).getDay();
+    dates += `<th class="${(dow===0||dow===6)?'weekend':''}">${d}<br>${weekdays[dow]}</th>`;
+  }
+
+  let summary = '';
+  db.people.forEach(x=>{
+    let D=0,N=0,H=0,W=0;
+    for(let d=1;d<=days();d++){
+      const v=p[x.id+'_'+d]||'V';
+      if(v==='D'){D++;H+=12}
+      if(v==='N'){N++;H+=12}
+      const dow=new Date(view.getFullYear(),view.getMonth(),d).getDay();
+      if((dow===0||dow===6)&&(v==='D'||v==='N'))W++;
+    }
+    summary += `<div class="sum"><b>${esc(x.name)}</b><span>${H} h · ${D} denních · ${N} nočních · ${W} víkendů</span></div>`;
+  });
+
+  const w = window.open('', '_blank', 'width=1400,height=900');
+  if(!w){ alert('Prohlížeč zablokoval nové okno. Povolte vyskakovací okna pro tuto stránku.'); return; }
+
+  w.document.write(`<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>${esc(title)}</title>
+<style>
+@page{size:landscape;margin:8mm}
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;color:#111;margin:0}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:#666;margin-bottom:14px}
+table{border-collapse:collapse;width:100%;font-size:10px}
+th,td{border:1px solid #bbb;text-align:center;padding:4px;height:25px}
+th:first-child,td:first-child{text-align:left;min-width:115px}
+th{background:#f1f1f1}
+.weekend{background:#f8f8f8}
+.D{background:#e8f0ff;color:#1946a1;font-weight:bold}
+.N{background:#eee9ff;color:#5535a4;font-weight:bold}
+.V{background:#f3f3f3;color:#777}
+.DOV{background:#fff0d0;color:#8a5700;font-weight:bold}
+.PN{background:#ffe1df;color:#a61b12;font-weight:bold}
+.VOL{background:#fff1e3;color:#934214;font-weight:bold}
+.legend{margin:12px 0;display:flex;gap:14px;font-size:10px}
+.legend span{padding:4px 7px;border:1px solid #ddd}
+.summary{margin-top:12px;display:flex;flex-wrap:wrap;gap:7px}
+.sum{border:1px solid #ddd;border-radius:5px;padding:6px 8px;font-size:10px}
+.sum span{display:block;color:#555;margin-top:2px}
+.footer{margin-top:12px;font-size:9px;color:#666}
+</style>
+</head>
+<body>
+<h1>${esc(title)}</h1>
+<div class="sub">Měsíční rozpis směn</div>
+<table><thead><tr><th>Sestra</th>${dates}</tr></thead><tbody>${rows}</tbody></table>
+<div class="legend">
+<span>☀️ D = denní</span><span>🌙 N = noční</span><span>V = volno</span><span>DOV = dovolená</span><span>PN = nemoc</span><span>VOL = požadavek volna</span>
+</div>
+<div class="summary">${summary}</div>
+<div class="footer">Vygenerováno z aplikace Plán směn.</div>
+<script>
+setTimeout(()=>window.print(),350);
+<\/script>
+</body></html>`);
+  w.document.close();
+}
 function validate(){
  let p=plan(),errors=[];
  for(let d=1;d<=days();d++){
   let D=db.people.filter(x=>p[x.id+'_'+d]==='D').length,N=db.people.filter(x=>p[x.id+'_'+d]==='N').length;
   if(D<db.settings.needD)errors.push(`${d}. ${months[view.getMonth()]} – chybí ${db.settings.needD-D} denní směna`);
-  if(N<db.settings.needN)errors.push(`${d}. ${months[view.getMonth()} – chybí ${db.settings.needN-N} noční směna`);
+  if(N<db.settings.needN)errors.push(`${d}. ${months[view.getMonth()]} – chybí ${db.settings.needN-N} noční směna`);
  }
  db.people.forEach(x=>{
   for(let d=1;d<=days();d++){
