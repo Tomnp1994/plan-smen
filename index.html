@@ -28,7 +28,7 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 <main class="wrap">
 <section class="card">
 <div class="toolbar">
-<button class="primary" id="generate">🤖 Vygenerovat férový plán</button>
+<button class="primary" id="generate" type="button">🤖 Vygenerovat férový plán</button>
 <button class="secondary" onclick="showSection('peopleSection')">👩‍⚕️ Sestry</button>
 <button class="plain" onclick="showSection('settingsSection')">⚙️ Nastavení</button>
 <button class="plain" onclick="openPdf()">📄 Otevřít v PDF</button>
@@ -320,6 +320,7 @@ function generate(){
  document.getElementById('notice').innerHTML=
   `<b>✓ Plán byl vygenerován.</b> ${Math.min(...hs)}–${Math.max(...hs)} hodin a ${Math.min(...ns)}–${Math.max(...ns)} nočních na sestru.`;
 }
+document.getElementById('generate').onclick=generate;
 function showError(msg){let e=document.getElementById('notice');e.className='notice err';e.innerHTML='<b>⚠️ Plán nelze vytvořit</b><br>'+esc(msg)}
 
 function openPdf(){
