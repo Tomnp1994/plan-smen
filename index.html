@@ -13,7 +13,7 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 .notice{padding:13px 15px;border-radius:12px;margin-top:13px;background:var(--greenbg);color:var(--green);line-height:1.45}.notice.err{background:var(--redbg);color:var(--red)}.notice.warn{background:var(--orangebg);color:var(--orange)}
 .tablewrap{overflow:auto;border:1px solid var(--line);border-radius:13px}.schedule{border-collapse:separate;border-spacing:0;min-width:1000px;width:100%}.schedule th,.schedule td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;padding:5px;height:55px}.schedule th{background:#f9fafb;font-size:12px;position:sticky;top:0;z-index:3}.schedule th:first-child,.schedule td:first-child{position:sticky;left:0;z-index:4;background:#fff;text-align:left;min-width:155px}.schedule th:first-child{background:#f9fafb}.schedule th.weekend{background:#fff6ed}.name{font-weight:800}.small{font-size:12px;color:var(--muted)}.cell{width:100%;height:43px;border-radius:9px;padding:0;font-weight:800}.D{background:var(--bluebg);color:#2453b8}.N{background:var(--purplebg);color:#5b42b7}.V{background:#f2f4f7;color:#667085}.DOV{background:#fff1d6;color:#a15c00}.PN{background:#ffe4e1;color:#b42318}.VOL{background:#fff6ed;color:#9a3412}.today{outline:2px solid var(--blue);outline-offset:-2px}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.stat{background:#f9fafb;border-radius:12px;padding:13px}.stat b{display:block;font-size:16px}.stat span{color:var(--muted);font-size:13px}.ok{color:var(--green)}.bad{color:var(--red)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.person{border:1px solid var(--line);border-radius:13px;padding:14px}.person h3{margin:0 0 8px}.person .actions{display:flex;gap:8px;margin-top:12px}.form{display:grid;gap:12px}.form label{display:grid;gap:5px}.form input,.form select{padding:10px;border:1px solid var(--line);border-radius:9px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.help{font-size:12px;color:var(--muted)}.modal{position:fixed;inset:0;background:#10182877;display:none;align-items:center;justify-content:center;padding:16px;z-index:30}.modal.show{display:flex}.modalbox{background:white;border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}.modalbox h2{margin-top:0}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{padding:18px;text-align:left;background:white;border:1px solid var(--line);border-radius:12px}.choice strong{display:block;font-size:18px;margin-bottom:3px}.toggle{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{padding:7px 11px;border-radius:99px;background:#f2f4f7}.empty{padding:20px;color:var(--muted);text-align:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.person{border:1px solid var(--line);border-radius:13px;padding:14px;cursor:grab}.person:active{cursor:grabbing}.person[draggable=true]{user-select:none}.person h3{margin:0 0 8px}.person .actions{display:flex;gap:8px;margin-top:12px}.form{display:grid;gap:12px}.form label{display:grid;gap:5px}.form input,.form select{padding:10px;border:1px solid var(--line);border-radius:9px}.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.help{font-size:12px;color:var(--muted)}.modal{position:fixed;inset:0;background:#10182877;display:none;align-items:center;justify-content:center;padding:16px;z-index:30}.modal.show{display:flex}.modalbox{background:white;border-radius:18px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto}.modalbox h2{margin-top:0}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{padding:18px;text-align:left;background:white;border:1px solid var(--line);border-radius:12px}.choice strong{display:block;font-size:18px;margin-bottom:3px}.toggle{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{padding:7px 11px;border-radius:99px;background:#f2f4f7}.empty{padding:20px;color:var(--muted);text-align:center}
 @media(max-width:700px){main{padding:10px}.top{align-items:flex-start;flex-direction:column}.row{grid-template-columns:1fr}.brand{font-size:21px}}
 @media print{header,.toolbar button,.no-print,.notice{display:none!important}.card{box-shadow:none;border:0}.schedule{min-width:0;font-size:9px}.schedule th:first-child,.schedule td:first-child{position:static}.schedule .cell{height:28px}.stats{display:none}}
 </style>
@@ -22,7 +22,7 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 <header><div class="wrap top">
 <div><div class="brand">📅 Plán směn</div><div class="sub">Jednoduché plánování pro hlavní sestru</div></div>
 <div class="spacer"></div>
-<div class="toolbar"><button class="plain" id="prev">←</button><div class="month" id="monthTitle"></div><button class="plain" id="next">→</button></div>
+<div class="toolbar"><button class="plain" id="prev" type="button">←</button><div class="month" id="monthTitle"></div><button class="plain" id="next" type="button">→</button></div>
 </div></header>
 
 <main class="wrap">
@@ -30,11 +30,11 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 <div class="toolbar">
 <button class="primary" id="generate" type="button">🤖 Vygenerovat férový plán</button>
 <button class="secondary" onclick="showSection('peopleSection')">👩‍⚕️ Sestry</button>
-<button class="plain" onclick="showSection('settingsSection')">⚙️ Nastavení</button>
+<button class="plain" onclick="showSection('settingsSection')">⚙️ Nastavení</button><button class="plain" onclick="editMonthlyFund()">🕐 Měsíční fond</button>
 <button class="plain" onclick="openPdf()">📄 Otevřít v PDF</button>
 <div class="spacer"></div><span class="small" id="saveStatus">Uloženo v tomto prohlížeči</span>
 </div>
-<div id="notice" class="notice">Nastavte sestry, případně dovolené, a potom klikněte na „Vygenerovat férový plán“.</div>
+<div id="continuityInfo" class="help" style="margin:8px 0"></div><div id="notice" class="notice">Nastavte sestry, případně dovolené, a potom klikněte na „Vygenerovat férový plán“.</div>
 </section>
 
 <section class="card"><div class="tablewrap"><div id="schedule"></div></div></section>
@@ -43,7 +43,7 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 
 <section class="card" id="peopleSection" style="display:none">
 <h2>👩‍⚕️ Sestry</h2>
-<p class="help">U každé sestry nastavte úvazek a zda může pracovat denní/noční. Dovolenou a volno můžete zadat přímo v kalendáři.</p>
+<p class="help">Standardně je připraveno 9 sester. Pořadí můžete změnit přetažením nebo šipkami ↑ ↓. Toto pořadí se používá i v přehledech a při tisku.</p>
 <div id="people" class="grid"></div>
 <div style="margin-top:12px"><button class="primary" id="addPerson">＋ Přidat sestru</button></div>
 </section>
@@ -59,9 +59,9 @@ main{padding:20px}.card{background:white;border:1px solid var(--line);border-rad
 <label>Sestry na denní<input id="minD" type="number" min="1" value="3"></label>
 <label>Sestry na noční<input id="minN" type="number" min="1" value="2"></label>
 </div>
-<div class="help">Pro váš režim je nastaveno přesně 3× denní + 2× noční. V sobotu pouze 3× denní, v neděli pouze 2× noční.</div>
+<div class="help">Provoz: 3× denní + 2× noční; počet sester v týmu je libovolný (min. 5). V sobotu pouze 3× denní, v neděli pouze 2× noční.</div>
 <div class="help">Víkendy: v sobotu se plánují pouze denní směny, v neděli pouze noční směny. Systém se snaží, aby sobotní dvojice pokračovala v neděli na noční.</div>
-<div class="row"><label>Hodin týdně pro plný úvazek<input id="weeklyHours" type="number" min="1" step="0.5"></label><label>Max. směn za sebou<input id="maxConsecutive" type="number" min="1"></label></div>
+<div class="row"><label>Měsíční fond plného úvazku (h)<input id="monthlyFundHours" type="number" min="1" step="0.5"></label><label>Max. směn za sebou<input id="maxConsecutive" type="number" min="1" value="3"></label></div>
 <div class="row"><label>Min. odpočinek (hod.)<input id="restHours" type="number" min="1"></label><div class="help" id="monthlyFundInfo"></div></div>
 <button class="primary" id="saveSettings">Uložit nastavení</button>
 </div>
@@ -80,8 +80,12 @@ let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
   {id:2,name:'Sestra 2',rate:1,canD:true,canN:true,blocked:{}},
   {id:3,name:'Sestra 3',rate:1,canD:true,canN:true,blocked:{}},
   {id:4,name:'Sestra 4',rate:1,canD:true,canN:true,blocked:{}},
-  {id:5,name:'Sestra 5',rate:1,canD:true,canN:true,blocked:{}}
- ],
+  {id:5,name:'Sestra 5',rate:1,canD:true,canN:true,blocked:{}},
+  {id:6,name:'Sestra 6',rate:1,canD:true,canN:true,blocked:{}},
+  {id:7,name:'Sestra 7',rate:1,canD:true,canN:true,blocked:{}},
+  {id:8,name:'Sestra 8',rate:1,canD:true,canN:true,blocked:{}},
+  {id:9,name:'Sestra 9',rate:1,canD:true,canN:true,blocked:{}}
+]
  settings:{dayStart:'07:00',dayEnd:'19:00',nightStart:'19:00',nightEnd:'07:00',minD:3,maxD:3,minN:2,maxN:2,fullTimeHours:160,nightUntilMidnight:false,maxConsecutive:0,restHours:11},
  plans:{}
 };
@@ -115,6 +119,11 @@ function businessWorkdays(year,month){
  return count;
 }
 function monthlyFullTimeFund(year,month){
+ const k=year+'-'+String(month+1).padStart(2,'0');
+ if(db.settings.monthlyFunds && db.settings.monthlyFunds[k]!=null){
+   return +db.settings.monthlyFunds[k];
+ }
+ // Fallback: calculate from weekly hours if no explicit monthly fund was entered.
  const weekly=+db.settings.weeklyHours||40;
  return businessWorkdays(year,month)*(weekly/5);
 }
@@ -127,9 +136,35 @@ function updateMonthlyFundInfo(){
  const f=Number.isInteger(fund)?fund:fund.toFixed(1);
  el.textContent=`Fond plného úvazku pro ${months[view.getMonth()]} ${view.getFullYear()}: ${f} h (40 h týdně = 8 h/den, Po–Pá).`;
 }
+
+function editMonthlyFund(){
+ const current=monthlyFullTimeFund(view.getFullYear(),view.getMonth());
+ document.getElementById('modalTitle').textContent=`Měsíční fond – ${months[view.getMonth()]} ${view.getFullYear()}`;
+ document.getElementById('modalContent').innerHTML=`<div class="form">
+ <label>Fond plného úvazku pro tento měsíc (hodiny)
+ <input id="fundInput" type="number" min="1" step="0.5" value="${current}">
+ </label>
+ <div class="help">Tato hodnota platí pro úvazek 1,00 v aktuálním měsíci. Např. 0,75 úvazek dostane 75 % této hodnoty.</div>
+ <div class="toolbar">
+ <button class="primary" onclick="saveMonthlyFund()">Uložit fond</button>
+ <button class="plain" onclick="useCalculatedFund()">Použít automatický výpočet</button>
+ </div>
+ </div>`;
+ document.getElementById('modal').classList.add('show');
+}
+function saveMonthlyFund(){
+ const val=Math.max(1,+document.getElementById('fundInput').value||0);
+ if(!db.settings.monthlyFunds)db.settings.monthlyFunds={};
+ db.settings.monthlyFunds[key()]=val;
+ save();closeModal();render();
+}
+function useCalculatedFund(){
+ if(db.settings.monthlyFunds)delete db.settings.monthlyFunds[key()];
+ save();closeModal();render();
+}
 function render(){
  document.getElementById('monthTitle').textContent=months[view.getMonth()]+' '+view.getFullYear();
- renderSchedule();renderStats();renderPeople();fillSettings();validate();
+ renderSchedule();renderStats();renderPeople();fillSettings();validate();updateContinuityInfo();
 }
 function renderSchedule(){
  let p=plan(),h='<table class="schedule"><thead><tr><th>Sestra</th>';
@@ -163,11 +198,42 @@ function renderStats(){
  document.getElementById('stats').innerHTML=h||'<div class="empty">Zatím nejsou přidané žádné sestry.</div>';
 }
 function renderPeople(){
- document.getElementById('people').innerHTML=db.people.map(x=>`<div class="person">
-<h3>${esc(x.name)}</h3><div class="small">Úvazek ${x.rate} · ${x.canD?'denní ✓':'denní ✕'} · ${x.canN?'noční ✓':'noční ✕'}</div>
-<div class="small" style="margin-top:8px">Blokováno: ${Object.keys(x.blocked||{}).length} dní</div>
-<div class="actions"><button class="plain" onclick="editPerson(${x.id})">Upravit</button><button class="plain danger" onclick="removePerson(${x.id})">Odstranit</button></div>
-</div>`).join('');
+ const container=document.getElementById('people');
+ container.innerHTML=db.people.map((x,i)=>`<div class="person" draggable="true" data-id="${x.id}"
+   ondragstart="dragPersonStart(event,${x.id})"
+   ondragover="event.preventDefault()"
+   ondrop="dropPerson(event,${x.id})">
+   <div class="toolbar" style="justify-content:space-between">
+     <div><h3 style="margin:0">${i+1}. ${esc(x.name)}</h3><div class="small">Úvazek ${x.rate} · ${x.canD?'denní ✓':'denní ✕'} · ${x.canN?'noční ✓':'noční ✕'}</div></div>
+     <div class="toolbar">
+       <button class="plain" type="button" title="Posunout nahoru" onclick="movePerson(${x.id},-1)">↑</button>
+       <button class="plain" type="button" title="Posunout dolů" onclick="movePerson(${x.id},1)">↓</button>
+     </div>
+   </div>
+   <div class="small" style="margin-top:8px">Blokováno: ${Object.keys(x.blocked||{}).length} dní</div>
+   <div class="actions"><button class="plain" type="button" onclick="editPerson(${x.id})">Upravit</button><button class="plain danger" type="button" onclick="removePerson(${x.id})">Odstranit</button></div>
+ </div>`).join('');
+ if(!db.people.length)container.innerHTML='<div class="empty">Zatím nejsou přidané žádné sestry.</div>';
+}
+let draggedPersonId=null;
+function dragPersonStart(event,id){draggedPersonId=id;event.dataTransfer.effectAllowed='move';}
+function dropPerson(event,targetId){
+ event.preventDefault();
+ if(draggedPersonId==null||draggedPersonId===targetId)return;
+ const from=db.people.findIndex(x=>x.id===draggedPersonId);
+ const to=db.people.findIndex(x=>x.id===targetId);
+ if(from<0||to<0)return;
+ const [item]=db.people.splice(from,1);
+ db.people.splice(to,0,item);
+ draggedPersonId=null;
+ save();render();
+}
+function movePerson(id,delta){
+ const i=db.people.findIndex(x=>x.id===id);
+ const j=i+delta;
+ if(i<0||j<0||j>=db.people.length)return;
+ [db.people[i],db.people[j]]=[db.people[j],db.people[i]];
+ save();render();
 }
 function fillSettings(){['dayStart','dayEnd','nightStart','nightEnd','minD','minN','weeklyHours','maxConsecutive','restHours'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=db.settings[id]});document.getElementById('nightUntilMidnight').checked=!!db.settings.nightUntilMidnight}
 function editCell(id,d){
@@ -233,237 +299,348 @@ document.getElementById('saveSettings').onclick=()=>{
    Soft objective: hours close to target, nights/weekends balanced,
    honor requested leave.
 */
+
+function previousMonthKey(){
+ const d=new Date(view.getFullYear(),view.getMonth()-1,1);
+ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function previousMonthDays(){
+ return new Date(view.getFullYear(),view.getMonth(),0).getDate();
+}
+function previousMonthTail(x){
+ const prev=db.plans[previousMonthKey()]||{};
+ const lastDay=previousMonthDays();
+ const last=prev[x.id+'_'+lastDay];
+ let run=0;
+ if(last==='D'||last==='N'){
+   for(let d=lastDay;d>=1;d--){
+     const v=prev[x.id+'_'+d];
+     if(v==='D'||v==='N')run++; else break;
+   }
+   return {last,run};
+ }
+ return {last:null,run:0};
+}
+function updateContinuityInfo(){
+ const el=document.getElementById('continuityInfo');
+ if(!el)return;
+ const prev=db.plans[previousMonthKey()];
+ if(!prev){
+   el.textContent='↳ Navazování měsíců: předchozí měsíc zatím nemá uložený plán.';
+   return;
+ }
+ const parts=db.people.map(x=>{
+   const t=previousMonthTail(x);
+   return t.run?`${x.name}: ${t.run} směn za sebou`:null;
+ }).filter(Boolean);
+ el.textContent=parts.length?'↳ Navazuje na předchozí měsíc: '+parts.join(' · ')+'.':'↳ Navazuje na předchozí měsíc bez rozpracované série směn.';
+}
 function generate(){
+ const btn=document.getElementById('generate');
+ if(btn){btn.disabled=true;btn.textContent='⏳ Generuji plán…';}
  const people=db.people, ds=days();
  const DCOUNT=3, NCOUNT=2;
  const dayHours=12;
  const nightHours=calculatedNightHours();
  const fullFund=monthlyFullTimeFund(view.getFullYear(),view.getMonth());
+ const preferredConsecutive=2;
+ const maxConsecutive=Math.max(3,+db.settings.maxConsecutive||3);
 
- if(people.length!==5){
-   showError(`Tento režim je určen pro přesně 5 sester. Aktuálně máte ${people.length}.`);
+ if(people.length < DCOUNT+NCOUNT){
+   showError(`Potřebujete alespoň ${DCOUNT+NCOUNT} aktivních sester. Aktuálně máte ${people.length}.`);
    return;
  }
- if(people.filter(x=>x.canD&&!x.blocked?.[1]).length<3){
-   showError('Nejméně 3 sestry musí být schopné denní směny.');
+ if(people.filter(x=>x.canD).length < DCOUNT){
+   showError(`Nejméně ${DCOUNT} sester musí mít povolenou denní směnu.`);
    return;
  }
- if(people.filter(x=>x.canN&&!x.blocked?.[1]).length<2){
-   showError('Nejméně 2 sestry musí být schopné noční směny.');
+ if(people.filter(x=>x.canN).length < NCOUNT){
+   showError(`Nejméně ${NCOUNT} sester musí mít povolenou noční směnu.`);
    return;
  }
 
  const dow=d=>new Date(view.getFullYear(),view.getMonth(),d).getDay();
- const isSat=d=>dow(d)===6, isSun=d=>dow(d)===0, isWeekday=d=>!isSat(d)&&!isSun(d);
- const hardBlocked=(x,d)=>['DOV','PN'].includes((x.blocked||{})[d]);
- const requestedOff=(x,d)=>(x.blocked||{})[d]==='VOL';
+ const sat=d=>dow(d)===6, sun=d=>dow(d)===0, weekday=d=>!sat(d)&&!sun(d);
+ const blocked=(x,d)=>['DOV','PN'].includes((x.blocked||{})[d]);
+ const reqOff=(x,d)=>(x.blocked||{})[d]==='VOL';
 
- // Pevná pravidla jsou explicitní:
- // Po–Pá = 3 D + 2 N
- // So = 3 D
- // Ne = 2 N
- // Nedělní N musí být vybráno ze sobotních D (pokud je to možné – v tomto režimu ano).
- // Díky tomu se D -> N smí stát pouze při sobotě -> neděli.
- function pairKey(pair){return pair.map(x=>x.id).sort((a,b)=>a-b).join(',')}
- const pairs=[];
- for(let i=0;i<people.length;i++){
-   for(let j=i+1;j<people.length;j++){
-     pairs.push([people[i],people[j]]);
-   }
+ // A month can start with a continuation from previous month.
+ const previous=Object.fromEntries(people.map(x=>[x.id,previousMonthTail(x)]));
+
+ // State for backtracking.
+ function fresh(){
+   return Object.fromEntries(people.map(x=>[x.id,{
+     hours:0,nights:0,weekends:0,run:previous[x.id].run||0,
+     last:previous[x.id].last||null,byDay:{}
+   }]));
  }
 
- function validPairForNight(pair,d){
-   return pair.length===2 && pair.every(x=>x.canN&&!hardBlocked(x,d));
- }
- function validDayGroup(group,d){
-   return group.length===3 && group.every(x=>x.canD&&!hardBlocked(x,d));
- }
+ function canAssign(st,x,d,t,used){
+   if(used.has(x.id)||blocked(x,d))return false;
+   if(t==='D'&&!x.canD)return false;
+   if(t==='N'&&!x.canN)return false;
 
- // Vrací všechny možné noční dvojice na následující blok.
- // Aby nebyl D -> N mezi pátkem a pondělím, nový pár musí být disjunktní
- // s předchozím nočním párem a musí vzniknout ze sobotní trojice.
- function nextNightPairs(prevPair,sunday){
-   const prevIds=new Set(prevPair.map(x=>x.id));
-   return pairs.filter(pair=>{
-     if(pair.some(x=>prevIds.has(x.id)))return false;
-     return validPairForNight(pair,sunday);
-   });
+   // Hard transition rules:
+   // N -> D never.
+   // D -> N never, EXCEPT on Sunday, because Saturday D -> Sunday N is desired.
+   if(st[x.id].last==='N'&&t==='D')return false;
+   if(st[x.id].last==='D'&&t==='N'&&!sun(d))return false;
+
+   if(st[x.id].run>=maxConsecutive)return false;
+   return true;
  }
 
- // Rozdělení je po blocích: Po–Pá stejný noční pár, So = jeho doplněk,
- // Ne = nový noční pár ze sobotní denní trojice. To je jediný povolený přechod D -> N.
- function evaluateSequence(initialPair,nextPairs){
-   let assignment={};
-   let hours=Object.fromEntries(people.map(x=>[x.id,0]));
-   let nights=Object.fromEntries(people.map(x=>[x.id,0]));
-   let weekends=Object.fromEntries(people.map(x=>[x.id,0]));
-
-   let currentPair=initialPair.slice();
-
-   for(let d=1;d<=ds;d++){
-     const w=dow(d);
-
-     if(isSat(d)){
-       const D=people.filter(x=>!currentPair.some(n=>n.id===x.id));
-       if(!validDayGroup(D,d))return null;
-       assignment[d]={};
-       D.forEach(x=>{assignment[d][x.id]='D';hours[x.id]+=dayHours;weekends[x.id]++});
-       currentPair._saturdayD=D;
-     } else if(isSun(d)){
-       // nextPairs[d] is the selected pair for this Sunday.
-       const chosen=nextPairs[d];
-       if(!chosen || chosen.length!==2)return null;
-       // Must be from Saturday's D.
-       const satD=(assignment[d-1] ? Object.keys(assignment[d-1]).filter(id=>assignment[d-1][id]==='D').map(Number) : []);
-       if(!chosen.every(x=>satD.includes(x.id)))return null;
-       if(!validPairForNight(chosen,d))return null;
-       assignment[d]={};
-       chosen.forEach(x=>{assignment[d][x.id]='N';hours[x.id]+=nightHours;nights[x.id]++;weekends[x.id]++});
-       currentPair=chosen.slice();
-     } else {
-       if(!validPairForNight(currentPair,d))return null;
-       const D=people.filter(x=>!currentPair.some(n=>n.id===x.id));
-       if(!validDayGroup(D,d))return null;
-       assignment[d]={};
-       D.forEach(x=>{assignment[d][x.id]='D';hours[x.id]+=dayHours});
-       currentPair.forEach(x=>{assignment[d][x.id]='N';hours[x.id]+=nightHours;nights[x.id]++});
-     }
-   }
-
-   // Ověření přechodů a přesných počtů.
-   for(let d=1;d<=ds;d++){
-     const a=assignment[d]||{};
-     const D=Object.values(a).filter(v=>v==='D').length;
-     const N=Object.values(a).filter(v=>v==='N').length;
-     if(isSat(d) && (D!==3||N!==0))return null;
-     if(isSun(d) && (D!==0||N!==2))return null;
-     if(isWeekday(d) && (D!==3||N!==2))return null;
-
-     // Žádná běžná D -> N ani N -> D.
-     if(d>1){
-       for(const x of people){
-         const prev=assignment[d-1]?.[x.id], cur=assignment[d]?.[x.id];
-         if(prev==='D'&&cur==='N'&&!isSun(d))return null;
-         if(prev==='N'&&cur==='D')return null;
-       }
-     }
-   }
-   return {assignment,hours,nights,weekends};
+ function apply(st,d,t,x){
+   st[x.id].hours+=(t==='D'?dayHours:nightHours);
+   if(t==='N')st[x.id].nights++;
+   if(sat(d)||sun(d))st[x.id].weekends++;
+   st[x.id].run++;
+   st[x.id].last=t;
+   st[x.id].byDay[d]=t;
  }
 
- // Enumerate all valid weekend rotations. With 5 people there are only
- // 10 starting pairs and at most 3 possible disjoint next pairs per Sunday.
- let candidates=[];
- const startPairs=pairs.filter(pair=>validPairForNight(pair,1));
- if(!startPairs.length){
-   showError('Na začátku měsíce nelze vybrat dvě sestry pro noční směnu kvůli kompetencím nebo absencím.');
-   return;
- }
-
- // Find all Sundays that have a Saturday before them and choose a new pair.
- // We use DFS over weekend transitions; month length keeps this tiny.
- function enumerate(currentPair, d, nextMap){
-   if(d>ds){
-     const result=evaluateSequence(currentPair,nextMap);
-     if(result)candidates.push(result);
-     return;
-   }
-   if(isSun(d)){
-     const opts=nextNightPairs(currentPair,d);
-     if(!opts.length)return;
-     // Prefer requested-off-respecting pairs first, but enumerate all.
-     opts.sort((a,b)=>{
-       const ca=a.filter(x=>requestedOff(x,d)).length;
-       const cb=b.filter(x=>requestedOff(x,d)).length;
-       return ca-cb;
-     });
-     for(const pair of opts){
-       // If this Sunday has blocked D/PN in the pair, nextNightPairs already ruled it out.
-       const copy={...nextMap,[d]:pair};
-       enumerate(pair,d+1,copy);
-     }
-   } else {
-     enumerate(currentPair,d+1,nextMap);
-   }
- }
-
- for(const initial of startPairs)enumerate(initial,1,{});
-
- if(!candidates.length){
-   showError('Při současných DOV/PN a kompetencích nelze sestavit kompletní plán s přesným obsazením 3× D a 2× N. Zkontrolujte dostupnost všech pěti sester.');
-   return;
- }
-
- // Vyber nejrovnoměrnější kandidát.
- function objective(c){
-   let v=0;
-   const hs=people.map(x=>c.hours[x.id]);
-   const ns=people.map(x=>c.nights[x.id]);
-   const targetH=x=>fullFund*(+x.rate||1);
+ function clearDayRuns(st,used){
    for(const x of people){
-     v+=Math.pow(c.hours[x.id]-targetH(x),2)*1.2;
-     v+=Math.pow(c.nights[x.id]-(ds*2/5),2)*350;
-     for(let d=1;d<=ds;d++)if(requestedOff(x,d)&&c.assignment[d]?.[x.id])v+=1600;
-   }
-   v+=Math.pow(Math.max(...hs)-Math.min(...hs),2)*4;
-   v+=Math.pow(Math.max(...ns)-Math.min(...ns),2)*3000;
-   // Prefer 2/2 weekend continuity.
-   for(let d=2;d<=ds;d++){
-     if(isSun(d)){
-       const sat=c.assignment[d-1]||{}, sun=c.assignment[d]||{};
-       const overlap=Object.keys(sun).filter(id=>sun[id]==='N'&&sat[id]==='D').length;
-       v+=(2-overlap)*2500;
+     if(!used.has(x.id)){
+       st[x.id].run=0;
+       st[x.id].last=null;
      }
    }
-   return v;
  }
- candidates.sort((a,b)=>objective(a)-objective(b));
- const best=candidates[0];
+
+ function combo(arr,k){
+   const out=[];
+   function rec(start,chosen){
+     if(chosen.length===k){out.push(chosen.slice());return}
+     for(let i=start;i<=arr.length-(k-chosen.length);i++){
+       chosen.push(arr[i]);rec(i+1,chosen);chosen.pop();
+     }
+   }
+   rec(0,[]);
+   return out;
+ }
+
+ const rateSum=people.reduce((s,x)=>s+(+x.rate||1),0);
+ const targetH=x=>fullFund*(+x.rate||1);
+ const targetN=x=>(ds*NCOUNT/people.length)*(+x.rate||1);
+ const targetW=x=>(Math.ceil(ds/7)*2/people.length)*(+x.rate||1);
+
+ function candidateCost(st,x,d,t,weekend){
+   const newH=st[x.id].hours+(t==='D'?dayHours:nightHours);
+   const newN=st[x.id].nights+(t==='N'?1:0);
+   const workTarget=(d*(DCOUNT+NCOUNT))/people.length;
+   const newTotal=st[x.id].hours/12+1;
+   let c=0;
+
+   // 1) Do not let someone fall behind/ahead of the team during the month.
+   c += Math.pow(newTotal-workTarget*(+x.rate||1),2)*180;
+
+   // 2) Stay close to the individual monthly fund. Overtime is allowed, but
+   // it should be shared rather than concentrated in one person.
+   c += Math.pow((newH-targetH(x))/12,2)*35;
+
+   // 3) Strongly equalize night shifts.
+   c += Math.pow(newN-targetN(x),2)*220;
+
+   // 4) Share weekend work.
+   if(weekend)c += Math.pow((st[x.id].weekends+1)-targetW(x),2)*10;
+
+   // 5) Requested leave is soft.
+   if(reqOff(x,d))c += 1400;
+
+   // 6) Spacing fairness: a third consecutive shift is only an emergency option.
+   const resultingRun=st[x.id].run+1;
+   if(resultingRun>preferredConsecutive)c += 18000*Math.pow(resultingRun-preferredConsecutive,2);
+   else if(resultingRun===2)c += 90;
+
+   // 7) Prefer people who have had a longer break.
+   // If yesterday was worked, applying another shift is more expensive.
+   if(st[x.id].last)c += 220;
+
+   return c + Math.random()*2;
+ }
+
+ function localScheduleCandidates(st,d){
+   const weekendSat=sat(d), weekendSun=sun(d);
+   const dayPool=people.filter(x=>x.canD&&!blocked(x,d));
+   const nightPool=people.filter(x=>x.canN&&!blocked(x,d));
+
+   if(weekendSat){
+     // Saturday: EXACTLY 3 D, no N.
+     return combo(dayPool,DCOUNT).map(D=>({D,N:[]}));
+   }
+   if(weekendSun){
+     // Sunday: EXACTLY 2 N, no D. Prefer people who worked Saturday D.
+     const satDIds=new Set();
+     if(d>1 && st.__yesterdayAssignment){
+       Object.entries(st.__yesterdayAssignment).forEach(([id,v])=>{if(v==='D')satDIds.add(+id)});
+     }
+     return combo(nightPool,NCOUNT).map(N=>({D:[],N,weekendOverlap:N.filter(x=>satDIds.has(x.id)).length}));
+   }
+   // Weekday: EXACTLY 3 D + 2 N. No person can be in both groups.
+   const result=[];
+   const nPairs=combo(nightPool,NCOUNT);
+   for(const N of nPairs){
+     const nIds=new Set(N.map(x=>x.id));
+     const D=dayPool.filter(x=>!nIds.has(x.id));
+     if(D.length>=DCOUNT){
+       for(const dg of combo(D,DCOUNT))result.push({D:dg,N});
+     }
+   }
+   return result;
+ }
+
+ function rankDailyOptions(st,d,opts){
+   const weekend=sat(d)||sun(d);
+   return opts.map(opt=>{
+     let c=0;
+     if(opt.D.length&&opt.N.length){
+       for(const x of opt.D)c+=candidateCost(st,x,d,'D',weekend);
+       for(const x of opt.N)c+=candidateCost(st,x,d,'N',weekend);
+     }else if(opt.D.length){
+       for(const x of opt.D)c+=candidateCost(st,x,d,'D',true);
+     }else{
+       for(const x of opt.N)c+=candidateCost(st,x,d,'N',true);
+       // Strong preference: Saturday D -> Sunday N.
+       c+=(NCOUNT-(opt.weekendOverlap||0))*1600;
+     }
+     return {opt,c:c+Math.random()*2};
+   }).sort((a,b)=>a.c-b.c);
+ }
+
+ function search(st,d,assignment,nodes){
+   nodes.count++;
+   if(nodes.count>250000)return null;
+   if(d>ds)return {state:st,assignment};
+
+   // Prepare yesterday's assignments for Sunday continuity.
+   st.__yesterdayAssignment=assignment[d-1]||null;
+
+   let opts=localScheduleCandidates(st,d);
+
+   // Hard cross-day availability / transition filtering.
+   opts=opts.filter(opt=>{
+     const used=new Set();
+     for(const x of [...opt.D,...opt.N]){
+       const t=opt.D.includes(x)?'D':'N';
+       if(!canAssign(st,x,d,t,used))return false;
+       used.add(x.id);
+     }
+     return true;
+   });
+
+   const ranked=rankDailyOptions(st,d,opts);
+   // Try a reasonable number of best daily combinations. When there are 9+ nurses,
+   // this avoids exponential explosion while still exploring alternatives.
+   for(const item of ranked.slice(0,120)){
+     const opt=item.opt;
+     const used=new Set();
+     const changes=[];
+     let ok=true;
+
+     for(const x of opt.N){
+       if(!canAssign(st,x,d,'N',used)){ok=false;break}
+       used.add(x.id);changes.push(['N',x]);
+     }
+     if(ok)for(const x of opt.D){
+       if(!canAssign(st,x,d,'D',used)){ok=false;break}
+       used.add(x.id);changes.push(['D',x]);
+     }
+     if(!ok)continue;
+
+     // Snapshot fields we modify.
+     const snapshot={};
+     for(const x of people)snapshot[x.id]={hours:st[x.id].hours,nights:st[x.id].nights,weekends:st[x.id].weekends,run:st[x.id].run,last:st[x.id].last};
+     for(const [t,x] of changes)apply(st,d,t,x);
+
+     const nextAssignment={...assignment,[d]:{}};
+     changes.forEach(([t,x])=>nextAssignment[d][x.id]=t);
+
+     clearDayRuns(st,used);
+     const res=search(st,d+1,nextAssignment,nodes);
+     if(res)return res;
+
+     // restore
+     for(const x of people){
+       Object.assign(st[x.id],snapshot[x.id]);
+       if(st[x.id].byDay[d])delete st[x.id].byDay[d];
+     }
+   }
+   delete st.__yesterdayAssignment;
+   return null;
+ }
+
+ // Fallback for heavily constrained months: restart with randomized ordering.
+ let best=null,bestCost=Infinity;
+ for(let attempt=0;attempt<80;attempt++){
+   // Shuffle people only for tie-breaking; do not alter db.people order permanently.
+   const original=people.slice();
+   const shuffled=people.slice().sort(()=>Math.random()-0.5);
+   people.splice(0,people.length,...shuffled);
+
+   const st=fresh();
+   const res=search(st,1,{}, {count:0});
+   people.splice(0,people.length,...original);
+   if(!res)continue;
+
+   // Evaluate the complete plan.
+   let c=0;
+   const hs=people.map(x=>res.state[x.id].hours);
+   const ns=people.map(x=>res.state[x.id].nights);
+   for(const x of people){
+     let run=0, maxRun=0, worked=0;
+     for(let d=1;d<=ds;d++){
+       const vv=res.assignment[d]?.[x.id];
+       if(vv==='D'||vv==='N'){run++;worked++;maxRun=Math.max(maxRun,run);if(run>2)c+=18000*Math.pow(run-2,2);}
+       else run=0;
+
+       // Keep cumulative workload close to the proportional target throughout the month.
+       const expected=(d*(DCOUNT+NCOUNT)/people.length)*(+x.rate||1);
+       c += Math.pow(worked-expected,2)*8;
+       if(reqOff(x,d)&&vv)c+=1800;
+     }
+     if(maxRun===2)c+=worked*12; // Prefer alternating short blocks over repeated doubles.
+     c+=Math.pow((res.state[x.id].hours-targetH(x))/12,2)*85;
+     c+=Math.pow(res.state[x.id].nights-targetN(x),2)*300;
+   }
+   c+=Math.pow(Math.max(...hs)-Math.min(...hs),2)*12;
+   c+=Math.pow(Math.max(...ns)-Math.min(...ns),2)*2500;
+   for(let d=1;d<=ds;d++){
+     if(!sun(d)||d===1)continue;
+     const satA=res.assignment[d-1]||{},sunA=res.assignment[d]||{};
+     const overlap=people.filter(x=>satA[x.id]==='D'&&sunA[x.id]==='N').length;
+     c+=Math.pow(NCOUNT-overlap,2)*2200;
+   }
+   if(c<bestCost){bestCost=c;best=res}
+ }
+
+ if(!best){
+   showError('Nepodařilo se najít kompletní plán. Zkontrolujte DOV/PN, povolení denních/nočních směn a maximální počet směn za sebou. Pravidla jsou Po–Pá 3 D + 2 N, sobota 3 D, neděle 2 N.');
+   return;
+ }
 
  const p={};
- people.forEach(x=>{
+ for(const x of people){
    for(let d=1;d<=ds;d++){
      const b=(x.blocked||{})[d];
      p[x.id+'_'+d]=b==='DOV'||b==='PN'?b:(b==='VOL'?'VOL':'V');
      if(best.assignment[d]?.[x.id])p[x.id+'_'+d]=best.assignment[d][x.id];
    }
- });
- db.plans[key()]=p;
- save();render();
-
- // Finální kontrola proti právě vytvořenému plánu.
- const errors=[];
- for(let d=1;d<=ds;d++){
-   let D=0,N=0;
-   for(const x of people){if(p[x.id+'_'+d]==='D')D++;if(p[x.id+'_'+d]==='N')N++}
-   if(isSat(d)&&(D!==3||N!==0))errors.push(`${d}. sobota: musí být 3 D a 0 N`);
-   if(isSun(d)&&(D!==0||N!==2))errors.push(`${d}. neděle: musí být 0 D a 2 N`);
-   if(isWeekday(d)&&(D!==3||N!==2))errors.push(`${d}. pracovní den: musí být 3 D a 2 N`);
-   for(const x of people){
-     const cur=p[x.id+'_'+d],prev=p[x.id+'_'+(d-1)];
-     if(prev==='D'&&cur==='N'&&!isSun(d))errors.push(`${x.name}: D → N ${d}.`);
-     if(prev==='N'&&cur==='D')errors.push(`${x.name}: N → D ${d}.`);
-     if(isSun(d)&&cur==='D')errors.push(`${x.name}: ${d}. neděle – D není povolena`);
-     if(isSat(d)&&cur==='N')errors.push(`${x.name}: ${d}. sobota – N není povolena`);
-   }
  }
- if(errors.length){
-   delete db.plans[key()];
-   save();
-   showError('Interní kontrola našla chybu v generovaném plánu: '+errors.slice(0,5).join('; '));
-   render();
-   return;
- }
+ db.plans[key()]=p;save();render();
 
- const hs=people.map(x=>Math.round(best.hours[x.id]));
- const ns=people.map(x=>best.nights[x.id]);
+ const hs=people.map(x=>Math.round(best.state[x.id].hours));
+ const ns=people.map(x=>best.state[x.id].nights);
+ if(btn){btn.disabled=false;btn.textContent='🤖 Vygenerovat férový plán'}
  document.getElementById('notice').className='notice';
  document.getElementById('notice').innerHTML=
-   `<b>✓ Plán byl vygenerován správně.</b> Po–Pá 3× D + 2× N, sobota 3× D, neděle 2× N. `+
-   `Rozdělení: ${Math.min(...hs)}–${Math.max(...hs)} h a ${Math.min(...ns)}–${Math.max(...ns)} nočních. `+
-   `Sobotní D → nedělní N je použito tam, kde je to možné.`;
+  `<b>✓ Plán byl vygenerován pro ${people.length} sester.</b> `+
+  `Po–Pá 3× D + 2× N, sobota 3× D, neděle 2× N. `+
+  `Rozdělení: ${Math.min(...hs)}–${Math.max(...hs)} h a ${Math.min(...ns)}–${Math.max(...ns)} nočních na sestru. `+
+  `Preferováno max. 2 směny za sebou; 3 jen pokud není jiné řešení.`;
 }
-function showError(msg){let e=document.getElementById('notice');e.className='notice err';e.innerHTML='<b>⚠️ Plán nelze vytvořit</b><br>'+esc(msg)}
+document.getElementById('generate').onclick=generate;
+function showError(msg){let btn=document.getElementById('generate');if(btn){btn.disabled=false;btn.textContent='🤖 Vygenerovat férový plán'}let e=document.getElementById('notice');e.className='notice err';e.innerHTML='<b>⚠️ Plán nelze vytvořit</b><br>'+esc(msg)}
 
 function openPdf(){
   // Otevře čistý tiskový náhled v novém okně.
