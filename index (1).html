@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plán směn</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e4e7ec;--primary:#315efb;--danger:#d92d20;--ok:#079455;--day:#eaf2ff;--night:#eeeaff;--off:#f2f4f7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:18px 22px;position:sticky;top:0;z-index:5}
+.wrap{max-width:1250px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:24px;font-weight:750}.sub{color:var(--muted);margin-top:3px}
+button,select,input{font:inherit}button{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:650}.primary{background:var(--primary);color:#fff}.secondary{background:#eef2ff;color:#2947b8}.plain{background:#fff;border:1px solid var(--line)}.danger{color:var(--danger)}
+main{padding:22px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px;box-shadow:0 2px 8px #1018280a}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.month{font-size:20px;font-weight:750;margin:0 8px}.spacer{flex:1}
+.notice{padding:12px 14px;border-radius:12px;background:#ecfdf3;color:#067647;margin-top:14px}.notice.warn{background:#fffaeb;color:#b54708}.notice.err{background:#fef3f2;color:#b42318}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px}.schedule{border-collapse:separate;border-spacing:0;min-width:900px;width:100%}.schedule th,.schedule td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center;height:54px;padding:5px}.schedule th{background:#f9fafb;position:sticky;top:0;z-index:2;font-size:12px}.schedule th:first-child,.schedule td:first-child{position:sticky;left:0;z-index:3;background:#fff;text-align:left;min-width:150px}.schedule th:first-child{z-index:4;background:#f9fafb}.cell{width:100%;height:42px;border-radius:9px;padding:0;font-weight:750}.D{background:var(--day);color:#2453b8}.N{background:var(--night);color:#5b42b7}.V{background:var(--off);color:#667085}.DOV{background:#fff1d6;color:#a15c00}.PN{background:#ffe4e1;color:#b42318}
+.today{outline:2px solid var(--primary);outline-offset:-2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.person{border:1px solid var(--line);border-radius:12px;padding:14px}.person h3{margin:0 0 8px}.small{font-size:13px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.stat{padding:14px;background:#f9fafb;border-radius:12px}.stat b{display:block;font-size:21px}
+.modal{position:fixed;inset:0;background:#10182866;display:none;align-items:center;justify-content:center;padding:18px;z-index:20}.modal.show{display:flex}.modalbox{background:#fff;border-radius:18px;padding:20px;max-width:520px;width:100%}.modalbox h2{margin-top:0}.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}.choice{padding:18px;border:1px solid var(--line);border-radius:12px;background:#fff;text-align:left}.choice strong{display:block;font-size:17px}.form{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form input,.form select{width:100%;padding:10px;border:1px solid var(--line);border-radius:9px}.people-actions{display:flex;gap:8px;margin-top:12px}
+@media(max-width:700px){main{padding:12px}.top{align-items:flex-start;flex-direction:column}.row{grid-template-columns:1fr}.brand{font-size:21px}}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+<div><div class="brand">📅 Plán směn</div><div class="sub">Jednoduchý měsíční plán pro hlavní sestru</div></div>
+<div class="toolbar"><button class="plain" id="prev">←</button><div class="month" id="monthTitle"></div><button class="plain" id="next">→</button></div>
+</div></header>
+
+<main class="wrap">
+<section class="card">
+<div class="toolbar">
+<button class="primary" id="generate">🤖 Vygenerovat plán</button>
+<button class="secondary" id="peopleBtn">👩‍⚕️ Sestry</button>
+<button class="plain" id="settingsBtn">⚙️ Nastavení</button>
+<button class="plain" id="printBtn">🖨️ Tisk</button>
+<div class="spacer"></div><span class="small" id="saveStatus">Uloženo v prohlížeči</span>
+</div>
+<div id="notice" class="notice">Připraveno. Nejdříve nastavte sestry a jejich dostupnost.</div>
+</section>
+
+<section class="card"><div class="tablewrap"><div id="schedule"></div></div></section>
+
+<section class="card">
+<h2>Souhrn</h2><div id="stats" class="stats"></div>
+</section>
+
+<section class="card" id="peopleSection" style="display:none">
+<h2>Sestry</h2><div id="people" class="grid"></div>
+<div class="people-actions"><button class="primary" id="addPerson">＋ Přidat sestru</button></div>
+</section>
+
+<section class="card" id="settingsSection" style="display:none">
+<h2>Nastavení</h2>
+<div class="form">
+<div class="row"><label>Denní směna<br><input id="dayStart" type="time"><input id="dayEnd" type="time"></label>
+<label>Noční směna<br><input id="nightStart" type="time"><input id="nightEnd" type="time"></label></div>
+<div class="row"><label>Počet sester – denní<br><input id="needD" type="number" min="1"></label>
+<label>Počet sester – noční<br><input id="needN" type="number" min="1"></label></div>
+<div class="row"><label>Max. směn za sebou<br><input id="maxConsecutive" type="number" min="1"></label>
+<label>Min. odpočinek (hodiny)<br><input id="restHours" type="number" min="1"></label></div>
+<button class="primary" id="saveSettings">Uložit nastavení</button>
+</div>
+</section>
+</main>
+
+<div class="modal" id="modal"><div class="modalbox"><h2 id="modalTitle"></h2><div id="modalContent"></div><br><button class="plain" onclick="closeModal()">Zrušit</button></div></div>
+
+<script>
+const KEY='plan_smen_v1';
+const months=['leden','únor','březen','duben','květen','červen','červenec','srpen','září','říjen','listopad','prosinec'];
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
+ people:[{id:1,name:'Sestra 1',rate:1,canD:true,canN:true,blocked:[]},{id:2,name:'Sestra 2',rate:1,canD:true,canN:true,blocked:[]},{id:3,name:'Sestra 3',rate:1,canD:true,canN:true,blocked:[]},{id:4,name:'Sestra 4',rate:1,canD:true,canN:true,blocked:[]},{id:5,name:'Sestra 5',rate:1,canD:true,canN:true,blocked:[]}],
+ settings:{dayStart:'07:00',dayEnd:'19:00',nightStart:'19:00',nightEnd:'07:00',needD:1,needN:1,maxConsecutive:4,restHours:11},
+ plans:{}
+};
+let view=new Date(); view.setDate(1);
+
+function save(){localStorage.setItem(KEY,JSON.stringify(db)); document.getElementById('saveStatus').textContent='✓ Uloženo'; setTimeout(()=>document.getElementById('saveStatus').textContent='Uloženo v tomto prohlížeči',1200)}
+function key(){return view.getFullYear()+'-'+String(view.getMonth()+1).padStart(2,'0')}
+function days(){return new Date(view.getFullYear(),view.getMonth()+1,0).getDate()}
+function plan(){db.plans[key()] ||= {}; return db.plans[key()]}
+function fmtDay(d){let dt=new Date(view.getFullYear(),view.getMonth(),d); return ['Ne','Po','Út','St','Čt','Pá','So'][dt.getDay()]}
+function render(){
+ document.getElementById('monthTitle').textContent=months[view.getMonth()]+' '+view.getFullYear();
+ renderSchedule(); renderStats(); renderPeople(); fillSettings();
+}
+function renderSchedule(){
+ let p=plan(), html='<table class="schedule"><thead><tr><th>Sestra</th>';
+ for(let d=1;d<=days();d++) html+=`<th>${d}<br>${fmtDay(d)}</th>`;
+ html+='</tr></thead><tbody>';
+ db.people.forEach(person=>{
+  html+=`<tr><td><b>${esc(person.name)}</b><br><span class="small">${person.rate} úv.</span></td>`;
+  for(let d=1;d<=days();d++){
+   let v=p[person.id+'_'+d]||'V', cls=v;
+   let today=(new Date().toDateString()===new Date(view.getFullYear(),view.getMonth(),d).toDateString())?' today':'';
+   html+=`<td><button class="cell ${cls}${today}" onclick="editCell(${person.id},${d})">${v}</button></td>`;
+  } html+='</tr>';
+ });
+ html+='</tbody></table>'; document.getElementById('schedule').innerHTML=html;
+}
+function renderStats(){
+ let p=plan(), html='';
+ db.people.forEach(x=>{
+  let vals=[]; for(let d=1;d<=days();d++) vals.push(p[x.id+'_'+d]||'V');
+  let D=vals.filter(v=>v==='D').length,N=vals.filter(v=>v==='N').length;
+  let h=(D+N)*12; let weekends=vals.reduce((n,v,i)=>{let dt=new Date(view.getFullYear(),view.getMonth(),i+1).getDay();return n+(v!=='V'&&v!=='DOV'&&v!=='PN'&&(dt===0||dt===6)?1:0)},0);
+  html+=`<div class="stat"><b>${esc(x.name)}</b><span>${h} h · ${D} D · ${N} N · ${weekends} víkend</span></div>`;
+ }); document.getElementById('stats').innerHTML=html||'<span class="small">Žádné sestry.</span>';
+}
+function renderPeople(){
+ document.getElementById('people').innerHTML=db.people.map(x=>`<div class="person"><h3>${esc(x.name)}</h3>
+<div class="small">Úvazek ${x.rate} · ${x.canD?'D ano':'D ne'} · ${x.canN?'N ano':'N ne'}</div>
+<div class="people-actions"><button class="plain" onclick="editPerson(${x.id})">Upravit</button><button class="plain danger" onclick="removePerson(${x.id})">Odstranit</button></div></div>`).join('');
+}
+function fillSettings(){for(const id of ['dayStart','dayEnd','nightStart','nightEnd','needD','needN','maxConsecutive','restHours'])document.getElementById(id).value=db.settings[id]}
+function editCell(id,d){
+ let p=plan(), current=p[id+'_'+d]||'V';
+ document.getElementById('modalTitle').textContent=db.people.find(x=>x.id===id).name+' · '+d+'. '+months[view.getMonth()];
+ document.getElementById('modalContent').innerHTML='<div class="choices">'+[['D','Denní směna'],['N','Noční směna'],['V','Volno'],['DOV','Dovolená'],['PN','Nemoc']].map(([v,t])=>`<button class="choice" onclick="setCell(${id},${d},'${v}')"><strong>${v}</strong>${t}</button>`).join('')+'</div>';
+ document.getElementById('modal').classList.add('show');
+}
+function setCell(id,d,v){plan()[id+'_'+d]=v; save(); closeModal(); render(); validate()}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function editPerson(id){
+ let x=db.people.find(p=>p.id===id);
+ document.getElementById('modalTitle').textContent='Upravit sestru';
+ document.getElementById('modalContent').innerHTML=`<div class="form">
+<label>Jméno<input id="pn" value="${esc(x.name)}"></label>
+<label>Úvazek<input id="pr" type="number" step="0.1" min="0.1" max="1" value="${x.rate}"></label>
+<label><input id="pd" type="checkbox" ${x.canD?'checked':''}> Může denní</label>
+<label><input id="pno" type="checkbox" ${x.canN?'checked':''}> Může noční</label>
+<button class="primary" onclick="savePerson(${id})">Uložit</button></div>`;
+ document.getElementById('modal').classList.add('show');
+}
+function savePerson(id){let x=db.people.find(p=>p.id===id);x.name=document.getElementById('pn').value.trim()||'Sestra';x.rate=+document.getElementById('pr').value||1;x.canD=document.getElementById('pd').checked;x.canN=document.getElementById('pno').checked;save();closeModal();render()}
+function removePerson(id){if(db.people.length<=1)return alert('Musí zůstat alespoň jedna sestra.');if(confirm('Opravdu odstranit sestru?')){db.people=db.people.filter(x=>x.id!==id);save();render()}}
+document.getElementById('addPerson').onclick=()=>{db.people.push({id:Date.now(),name:'Nová sestra',rate:1,canD:true,canN:true,blocked:[]});save();render();editPerson(db.people.at(-1).id)}
+document.getElementById('prev').onclick=()=>{view.setMonth(view.getMonth()-1);render()}
+document.getElementById('next').onclick=()=>{view.setMonth(view.getMonth()+1);render()}
+document.getElementById('peopleBtn').onclick=()=>toggle('peopleSection')
+document.getElementById('settingsBtn').onclick=()=>toggle('settingsSection')
+document.getElementById('printBtn').onclick=()=>window.print()
+function toggle(id){let e=document.getElementById(id);e.style.display=e.style.display==='none'?'block':'none'}
+document.getElementById('saveSettings').onclick=()=>{for(const id of ['dayStart','dayEnd','nightStart','nightEnd','needD','needN','maxConsecutive','restHours'])db.settings[id]=['needD','needN','maxConsecutive','restHours'].includes(id)?+document.getElementById(id).value:document.getElementById(id).value;save();render();alert('Nastavení uloženo.')}
+document.getElementById('generate').onclick=generate;
+
+function generate(){
+ let p={}; let people=db.people; let used=Object.fromEntries(people.map(x=>[x.id,[]]));
+ let assignments=0;
+ for(let d=1;d<=days();d++){
+  for(const type of ['D','N']){
+   let need=type==='D'?db.settings.needD:db.settings.needN;
+   for(let k=0;k<need;k++){
+    let candidates=people.filter(x=>(type==='D'?x.canD:x.canN)&&!isBlocked(x,d)&&canAssign(used[x.id],d,type));
+    candidates.sort((a,b)=>score(a,used[a.id],type,d)-score(b,used[b.id],type,d));
+    if(!candidates.length){p[`__error_${d}_${type}_${k}`]=1;continue}
+    let x=candidates[0];p[x.id+'_'+d]=type;used[x.id].push({d,type});assignments++;
+   }
+  }
+ }
+ db.plans[key()]=p;save();render();validate();
+}
+function isBlocked(x,d){return (x.blocked||[]).includes(d)}
+function canAssign(arr,d,type){
+ if(arr.some(a=>a.d===d))return false;
+ let last=arr.at(-1);
+ if(!last)return true;
+ if(last.type==='N'&&type==='D')return false;
+ if(d-last.d<2 && last.type==='N')return false;
+ let recent=arr.filter(a=>a.d<d&&d-a.d<=db.settings.maxConsecutive).length;
+ return recent<db.settings.maxConsecutive;
+}
+function score(x,arr,type,d){
+ let h=arr.length, n=arr.filter(a=>a.type==='N').length;
+ return h*100+n*20+(d%7===0||d%7===6?arr.filter(a=>[0,6].includes(new Date(view.getFullYear(),view.getMonth(),a.d).getDay())).length*10:0);
+}
+function validate(){
+ let p=plan(), errors=[], warnings=[];
+ for(let d=1;d<=days();d++){
+  for(const type of ['D','N']){
+   let need=type==='D'?db.settings.needD:db.settings.needN;
+   let got=db.people.filter(x=>p[x.id+'_'+d]===type).length;
+   if(got<need)errors.push(`${d}. ${months[view.getMonth()]} – chybí ${need-got} ${type==='D'?'denní':'noční'} směna`);
+  }
+ }
+ db.people.forEach(x=>{for(let d=1;d<=days();d++){let v=p[x.id+'_'+d];if((v==='D'||v==='N')&&isBlocked(x,d))errors.push(`${x.name}: ${d}. má nepřítomnost a zároveň směnu`)}});
+ let n=Object.keys(p).some(k=>k.startsWith('__error_'));
+ if(n)errors.push('Některé směny se nepodařilo automaticky obsadit.');
+ let e=document.getElementById('notice');
+ if(errors.length)e.className='notice err',e.innerHTML='<b>⚠️ Plán má problém</b><br>'+errors.slice(0,5).map(esc).join('<br>')+(errors.length>5?`<br>… a dalších ${errors.length-5}`:'');
+ else e.className='notice',e.innerHTML='<b>✓ Plán je obsazený.</b> Před použitím v reálném provozu ověřte pracovní dobu a interní pravidla pracoviště.';
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+render();
+</script>
+</body>
+</html>
